@@ -1,15 +1,15 @@
 import AlbumPayloadSchema from './schema.js';
-import {schemaOption} from '../schema.js';
+import schema from '../schema.js';
 import failAction from '../../actions/fail.js';
 
 const addAlbumValidation = {
-  options: schemaOption,
+  options: schema.option,
   payload: AlbumPayloadSchema,
   failAction,
 };
 
 const updateAlbumValidation = {
-  options: schemaOption,
+  options: schema.option,
   payload: AlbumPayloadSchema,
   failAction,
 };

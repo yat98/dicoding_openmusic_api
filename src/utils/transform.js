@@ -3,39 +3,49 @@ const mapDBAlbumsToModel = ({
   id,
   name,
   year,
-  created_at,
-  updated_at,
-}) => ({
-  id,
-  name,
-  year,
-  createdAt: created_at,
-  updatedAt: updated_at,
-});
+}) => {
+  const yearNumber = Number(year);
+  return ({
+    id,
+    name,
+    year: yearNumber,
+  });
+};
 
 const mapDBSongsToModel = ({
   id,
-  album_id,
   title,
-  year,
-  genre,
   performer,
-  duration,
-  created_at,
-  updated_at,
 }) => ({
   id,
-  albumId: album_id,
+  title,
+  performer,
+});
+
+const mapDBSongToModel = ({
+  id,
   title,
   year,
-  genre,
   performer,
+  genre,
   duration,
-  createdAt: created_at,
-  updatedAt: updated_at,
-});
+  album_id,
+}) => {
+  const yearNumber = Number(year);
+  const durationNumber = Number(duration);
+  return ({
+    id,
+    title,
+    year: yearNumber,
+    performer,
+    genre,
+    duration: durationNumber,
+    albumId: album_id,
+  });
+};
 
 export {
   mapDBAlbumsToModel,
   mapDBSongsToModel,
+  mapDBSongToModel,
 };

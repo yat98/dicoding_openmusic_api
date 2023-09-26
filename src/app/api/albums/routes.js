@@ -10,12 +10,12 @@ const routes = (handler, validator) => [
   {
     method: 'GET',
     path: '/albums',
-    handler: handler.getAlbumsHandler
+    handler: handler.getAlbumsHandler,
   },
   {
     method: 'GET',
     path: '/albums/{id}',
-    handler: handler.getAlbumByIdHandler
+    handler: handler.getAlbumByIdHandler,
   },
   {
     method: 'PUT',
@@ -28,7 +28,7 @@ const routes = (handler, validator) => [
   {
     method: 'DELETE',
     path: '/albums/{id}',
-    handler: handler.deleteAlbumHandler
+    handler: handler.deleteAlbumHandler,
   },
 ];
 

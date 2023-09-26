@@ -1,4 +1,4 @@
-import { mapDBAlbumsToModel, mapDBSongsToModel } from '../../src/utils/index.js';
+import { mapDBAlbumsToModel, mapDBSongsToModel, mapDBSongToModel } from '../../src/utils/index.js';
 
 describe('Test transform utils', () => {
   it('should transform albums model', () => {
@@ -15,8 +15,6 @@ describe('Test transform utils', () => {
       id: 1,
       name: 'Test album',
       year: 2023,
-      createdAt: date,
-      updatedAt: date,
     });
   });
 
@@ -36,14 +34,33 @@ describe('Test transform utils', () => {
 
     expect(song).toEqual({
       id: 1,
+      title: 'Test song',
+      performer: 'Test',
+    });
+  });
+
+  it('should transform song model', () => {
+    const date = new Date().toISOString();
+    const song = mapDBSongToModel({
+      id: 1,
+      album_id: 1,
+      title: 'Test song',
+      year: 2023,
+      genre: 'Test',
+      performer: 'Test',
+      duration: 501,
+      created_at: date,
+      updated_at: date,
+    });
+
+    expect(song).toEqual({
+      id: 1,
       albumId: 1,
       title: 'Test song',
       year: 2023,
       genre: 'Test',
       performer: 'Test',
       duration: 501,
-      createdAt: date,
-      updatedAt: date,
     });
   });
 });

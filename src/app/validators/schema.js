@@ -1,8 +1,8 @@
-const schemaOption = {
+const option = {
   abortEarly: false,
   allowUnknown: false,
 };
 
-export {
-  schemaOption,
+export default {
+  option,
 };

@@ -1,26 +1,18 @@
-import server from "../../src/app/server.js";
-import { getByIdQuery, getQuery, mapDBAlbumsToModel } from "../../src/utils";
 import pg from 'pg';
+import server from '../../src/app/server.js';
+import { getByIdQuery, getQuery, mapDBAlbumsToModel } from '../../src/utils';
 
 let request;
-const {Pool} = pg;
+const { Pool } = pg;
 const pool = new Pool();
 const payload = {
   name: 'Lorem',
-  year: '2023'
+  year: 2023,
 };
 const payloadUpdate = {
   name: 'Lorem Ipsum',
-  year: '2024'
+  year: 2024,
 };
-
-beforeAll(async () => {
-  request = await server.init();
-});
-
-afterAll(async () => {
-  await request.stop();
-});
 
 const firstAlbum = async () => {
   const query = getQuery('albums');
@@ -34,15 +26,31 @@ const findAlbumId = async (id) => {
   return result.rows.map(mapDBAlbumsToModel)[0];
 };
 
+const removeAllAlbum = async () => {
+  const query = {
+    text: 'DELETE FROM albums',
+  };
+  await pool.query(query);
+};
+
+beforeAll(async () => {
+  request = await server.init();
+});
+
+afterAll(async () => {
+  await removeAllAlbum();
+  await request.stop();
+});
+
 describe('Test album feature: ', () => {
-  describe('POST /albums', () => { 
+  describe('POST /albums', () => {
     it('should success add album', async () => {
       const response = await request.inject({
         method: 'POST',
         url: '/albums',
         payload,
       });
-      const {name, year} = await findAlbumId(response.result.data.albumId);
+      const { name, year } = await findAlbumId(response.result.data.albumId);
       expect(response.statusCode).toBe(201);
       expect(response.result.status).toBeDefined();
       expect(response.result.data.albumId).toBeDefined();
@@ -65,7 +73,7 @@ describe('Test album feature: ', () => {
     });
   });
 
-  describe('GET /albums', () => { 
+  describe('GET /albums', () => {
     it('should success get albums list', async () => {
       const response = await request.inject({
         method: 'GET',
@@ -82,7 +90,7 @@ describe('Test album feature: ', () => {
     });
   });
 
-  describe('GET /albums/{id}', () => { 
+  describe('GET /albums/{id}', () => {
     it('should success get detail album', async () => {
       const album = await firstAlbum();
       const response = await request.inject({
@@ -102,7 +110,7 @@ describe('Test album feature: ', () => {
     it('should return 404 when get detail album', async () => {
       const response = await request.inject({
         method: 'GET',
-        url: `/albums/invalidid`,
+        url: '/albums/invalidid',
       });
       expect(response.statusCode).toBe(404);
       expect(response.result.status).toBeDefined();
@@ -112,7 +120,7 @@ describe('Test album feature: ', () => {
     });
   });
 
-  describe('PUT /albums/{id}', () => { 
+  describe('PUT /albums/{id}', () => {
     it('should success update album', async () => {
       const album = await firstAlbum();
       const response = await request.inject({
@@ -120,7 +128,7 @@ describe('Test album feature: ', () => {
         url: `/albums/${album.id}`,
         payload: payloadUpdate,
       });
-      const {name, year} = await findAlbumId(album.id);
+      const { name, year } = await findAlbumId(album.id);
       expect(response.statusCode).toBe(200);
       expect(response.result.status).toBeDefined();
       expect(response.result.message).toBeDefined();
@@ -147,7 +155,7 @@ describe('Test album feature: ', () => {
     it('should return 404 when update album', async () => {
       const response = await request.inject({
         method: 'PUT',
-        url: `/albums/invalidid`,
+        url: '/albums/invalidid',
         payload,
       });
       expect(response.statusCode).toBe(404);
@@ -158,7 +166,7 @@ describe('Test album feature: ', () => {
     });
   });
 
-  describe('DELETE /albums/{id}', () => { 
+  describe('DELETE /albums/{id}', () => {
     it('should success delete album', async () => {
       const album = await firstAlbum();
       const response = await request.inject({
@@ -177,7 +185,7 @@ describe('Test album feature: ', () => {
     it('should return 404 when delete album', async () => {
       const response = await request.inject({
         method: 'DELETE',
-        url: `/albums/invalidid`,
+        url: '/albums/invalidid',
         payload,
       });
       expect(response.statusCode).toBe(404);

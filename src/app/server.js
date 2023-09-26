@@ -3,10 +3,14 @@ import Hapi from '@hapi/hapi';
 import app from '../config/app.js';
 import AlbumService from './services/postgres/AlbumService.js';
 import albumValidator from './validators/albums/index.js';
+import songValidator from './validators/songs/index.js';
 import albumPlugin from './api/albums/index.js';
+import songPlugin from './api/songs/index.js';
 import NotFoundError from './exceptions/NotFoundException.js';
+import SongService from './services/postgres/SongService.js';
 
 const albumService = new AlbumService();
+const songService = new SongService();
 const server = Hapi.server({
   host: app.host,
   port: app.port,
@@ -26,17 +30,24 @@ const registerPlugin = async () => {
       options: {
         service: albumService,
         validator: albumValidator,
-      }
-    }
-  ])
-}
+      },
+    },
+    {
+      plugin: songPlugin,
+      options: {
+        service: songService,
+        validator: songValidator,
+      },
+    },
+  ]);
+};
 
 /* c8 ignore next 40 */
 server.ext('onPreResponse', (req, h) => {
-  const {response} = req;
+  const { response } = req;
 
-  if(response instanceof Error) {
-    if(response instanceof NotFoundError) {
+  if (response instanceof Error) {
+    if (response instanceof NotFoundError) {
       return h.response({
         status: 'fail',
         message: response.message,
@@ -51,7 +62,7 @@ server.ext('onPreResponse', (req, h) => {
       status: 'error',
       message: response.message,
     };
-    if(app.mode === 'production'){
+    if (app.mode === 'production') {
       res.message = 'server error';
     }
 

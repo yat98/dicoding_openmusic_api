@@ -5,6 +5,7 @@ const failAction = (req, h, err) => {
       message: err.output.payload.message,
     }).code(400).takeover();
   }
+  throw err;
 };
 
 export default failAction;

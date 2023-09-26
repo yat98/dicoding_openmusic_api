@@ -15,6 +15,7 @@
         "prefer-const" : "error",
         "require-await" : "error",
         "no-console": "off",
+        "no-underscore-dangle": "off",
         "import/extensions": [
             "error",
             {

@@ -3,7 +3,7 @@ import autoBind from 'auto-bind';
 class AlbumHandler {
   constructor(service) {
     this._service = service;
-    autoBind(this);    
+    autoBind(this);
   }
 
   async postAlbumHandler(req, h) {
@@ -27,7 +27,7 @@ class AlbumHandler {
   }
 
   async getAlbumByIdHandler(req, h) {
-    const {id} = req.params;
+    const { id } = req.params;
     const album = await this._service.getAlbumById(id);
 
     return h.response({
@@ -39,7 +39,7 @@ class AlbumHandler {
   }
 
   async putAlbumHandler(req, h) {
-    const {id} = req.params;
+    const { id } = req.params;
     await this._service.updateAlbumById(id, req.payload);
     return h.response({
       status: 'success',
@@ -48,7 +48,7 @@ class AlbumHandler {
   }
 
   async deleteAlbumHandler(req, h) {
-    const {id} = req.params;
+    const { id } = req.params;
     await this._service.deleteAlbumById(id);
     return h.response({
       status: 'success',
