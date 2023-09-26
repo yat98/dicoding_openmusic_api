@@ -15,6 +15,12 @@ const getByIdQuery = (id, table) => ({
   values: [id],
 });
 
+const getByIdJoinQuery = (id, table1, table2, pk1, pk2) => ({
+  text: `SELECT t1.id, t2.id, t2.title, t2.performer FROM ${table1} t1
+  INNER JOIN ${table2} t2 ON t1.${pk1} = t2.${pk2} WHERE t1.${pk1}=$1`,
+  values: [id],
+});
+
 const updateByIdQuery = (id, datas, table) => {
   const datasArray = Object.entries(datas);
   const params = datasArray.map((value, index) => `${value[0]}=$${index + 1}`)
@@ -38,6 +44,7 @@ const deleteByIdQuery = (id, table) => {
 export {
   createQuery,
   getQuery,
+  getByIdJoinQuery,
   getByIdQuery,
   updateByIdQuery,
   deleteByIdQuery,

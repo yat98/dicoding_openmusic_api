@@ -1,3 +1,4 @@
+// eslint-disable-next-line consistent-return
 const failAction = (req, h, err) => {
   if (err.isJoi && Array.isArray(err.details) && err.details.length > 0) {
     return h.response({
@@ -5,7 +6,6 @@ const failAction = (req, h, err) => {
       message: err.output.payload.message,
     }).code(400).takeover();
   }
-  throw err;
 };
 
 export default failAction;

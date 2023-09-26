@@ -13,6 +13,13 @@ const payloadUpdate = {
   name: 'Lorem Ipsum',
   year: 2024,
 };
+const payloadSong = {
+  title: 'Evaluasi',
+  year: 2023,
+  genre: 'Indie',
+  performer: 'Hindia',
+  duration: 240,
+};
 
 const firstAlbum = async () => {
   const query = getQuery('albums');
@@ -33,11 +40,19 @@ const removeAllAlbum = async () => {
   await pool.query(query);
 };
 
+const removeAllSong = async () => {
+  const query = {
+    text: 'DELETE FROM songs',
+  };
+  await pool.query(query);
+};
+
 beforeAll(async () => {
   request = await server.init();
 });
 
 afterAll(async () => {
+  await removeAllSong();
   await removeAllAlbum();
   await request.stop();
 });
@@ -101,10 +116,39 @@ describe('Test album feature: ', () => {
       expect(response.result.status).toBeDefined();
       expect(response.result.data).toBeDefined();
       expect(response.result.data.album).toBeDefined();
+      expect(response.result.data.album.songs).toBeDefined();
       expect(response.result.status).toBe('success');
       expect(response.result.data.album.id).toBeDefined();
       expect(response.result.data.album.name).toBeDefined();
       expect(response.result.data.album.year).toBeDefined();
+    });
+
+    it('should success get detail album which contain songs', async () => {
+      await removeAllSong();
+      const album = await firstAlbum();
+      let response = await request.inject({
+        method: 'POST',
+        url: '/songs',
+        payload: {
+          ...payloadSong,
+          albumId: album.id,
+        },
+      });
+
+      response = await request.inject({
+        method: 'GET',
+        url: `/albums/${album.id}`,
+      });
+      expect(response.statusCode).toBe(200);
+      expect(response.result.status).toBeDefined();
+      expect(response.result.data).toBeDefined();
+      expect(response.result.data.album).toBeDefined();
+      expect(response.result.data.album.songs).toBeDefined();
+      expect(response.result.status).toBe('success');
+      expect(response.result.data.album.id).toBeDefined();
+      expect(response.result.data.album.name).toBeDefined();
+      expect(response.result.data.album.year).toBeDefined();
+      expect(response.result.data.album.songs.length).toBe(1);
     });
 
     it('should return 404 when get detail album', async () => {

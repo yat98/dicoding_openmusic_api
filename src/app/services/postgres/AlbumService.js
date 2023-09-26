@@ -2,7 +2,9 @@
 import { nanoid } from 'nanoid';
 import pg from 'pg';
 import {
-  createQuery, deleteByIdQuery, getByIdQuery, getQuery, mapDBAlbumsToModel, updateByIdQuery,
+  createQuery, deleteByIdQuery, getByIdJoinQuery,
+  getByIdQuery, getQuery, mapDBAlbumsToModel,
+  mapDBSongsToModel, updateByIdQuery,
 } from '../../../utils/index.js';
 import NotFoundError from '../../exceptions/NotFoundException.js';
 
@@ -37,12 +39,20 @@ class AlbumService {
   }
 
   async getAlbumById(id) {
-    const query = getByIdQuery(id, this._table);
+    let query = getByIdQuery(id, this._table);
     const result = await this._pool.query(query);
+    query = getByIdJoinQuery(id, this._table, 'songs', 'id', 'album_id');
+    const resultSongs = await this._pool.query(query);
 
     if (!result.rows.length) throw new NotFoundError('album not found');
 
-    return result.rows.map(mapDBAlbumsToModel)[0];
+    const data = {
+      ...result.rows.map(mapDBAlbumsToModel)[0],
+      songs: [],
+    };
+    if (resultSongs.rows.length > 0) data.songs = resultSongs.rows.map(mapDBSongsToModel);
+
+    return data;
   }
 
   async updateAlbumById(id, { name, year }) {
