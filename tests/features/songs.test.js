@@ -101,6 +101,45 @@ describe('Test song feature: ', () => {
       expect(response.result.data.songs[0].title).toBeDefined();
       expect(response.result.data.songs[0].performer).toBeDefined();
     });
+
+    it('should success get songs list by filter', async () => {
+      const response = await request.inject({
+        method: 'GET',
+        url: '/songs?title=eva',
+      });
+      expect(response.statusCode).toBe(200);
+      expect(response.result.status).toBeDefined();
+      expect(response.result.data).toBeDefined();
+      expect(response.result.data.songs).toBeDefined();
+      expect(response.result.status).toBe('success');
+      expect(response.result.data.songs.length).toBe(1);
+    });
+
+    it('should success get songs list by filter with 2 filter', async () => {
+      const response = await request.inject({
+        method: 'GET',
+        url: '/songs?title=eva&performer=andi',
+      });
+      expect(response.statusCode).toBe(200);
+      expect(response.result.status).toBeDefined();
+      expect(response.result.data).toBeDefined();
+      expect(response.result.data.songs).toBeDefined();
+      expect(response.result.status).toBe('success');
+      expect(response.result.data.songs.length).toBe(0);
+    });
+
+    it('should success get songs list by filter with invalid value', async () => {
+      const response = await request.inject({
+        method: 'GET',
+        url: '/songs?title=invalidtitle&performer=invalidperformer',
+      });
+      expect(response.statusCode).toBe(200);
+      expect(response.result.status).toBeDefined();
+      expect(response.result.data).toBeDefined();
+      expect(response.result.data.songs).toBeDefined();
+      expect(response.result.status).toBe('success');
+      expect(response.result.data.songs).toEqual([]);
+    });
   });
 
   describe('GET /songs/{id}', () => {

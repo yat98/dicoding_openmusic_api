@@ -1,5 +1,5 @@
 import {
-  createQuery, getQuery, getByIdQuery, updateByIdQuery, deleteByIdQuery,
+  createQuery, getQuery, getByIdQuery, updateByIdQuery, deleteByIdQuery, getQueryFilter,
 } from '../../src/utils/index.js';
 
 describe('Test transform utils', () => {
@@ -15,6 +15,36 @@ describe('Test transform utils', () => {
   it('should success return get query', () => {
     const query = getQuery('songs');
     expect(query).toBe('SELECT * FROM songs');
+  });
+
+  it('should success return get query', () => {
+    const query = getQuery('songs');
+    expect(query).toBe('SELECT * FROM songs');
+  });
+
+  it('should success return get query filter', () => {
+    const query = getQueryFilter({ title: 'cold', performer: 'chris' }, 'songs');
+    expect(query).toBe("SELECT * FROM songs WHERE LOWER(title) LIKE LOWER('%cold%') AND LOWER(performer) LIKE LOWER('%chris%')");
+  });
+
+  it('should success return get query filter only one filter', () => {
+    const query = getQueryFilter({ title: 'cold' }, 'songs');
+    expect(query).toBe("SELECT * FROM songs WHERE LOWER(title) LIKE LOWER('%cold%')");
+  });
+
+  it('should success return get query filter when object is null', () => {
+    const query = getQueryFilter({}, 'songs');
+    expect(query).toBe('SELECT * FROM songs');
+  });
+
+  it('should success return get query filter when object is undefined', () => {
+    const query = getQueryFilter({ title: undefined, body: undefined }, 'songs');
+    expect(query).toBe('SELECT * FROM songs');
+  });
+
+  it('should success return get query filter when object is empty string', () => {
+    const query = getQueryFilter({ title: '', body: undefined }, 'songs');
+    expect(query).toBe('SELECT * FROM songs WHERE LOWER(title) LIKE LOWER(\'%%\')');
   });
 
   it('should success return get query by id', () => {

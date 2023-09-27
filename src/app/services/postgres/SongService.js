@@ -2,8 +2,7 @@
 import { nanoid } from 'nanoid';
 import pg from 'pg';
 import {
-  createQuery, deleteByIdQuery, getByIdQuery,
-  getQuery, mapDBSongToModel,
+  createQuery, deleteByIdQuery, getByIdQuery, getQueryFilter, mapDBSongToModel,
   mapDBSongsToModel, updateByIdQuery,
 } from '../../../utils/index.js';
 import NotFoundError from '../../exceptions/NotFoundException.js';
@@ -38,8 +37,8 @@ class SongService {
     return result.rows[0].id;
   }
 
-  async getSongs() {
-    const query = getQuery(this._table);
+  async getSongs(filter) {
+    const query = getQueryFilter(filter, this._table);
     const result = await this._pool.query(query);
     return result.rows.map(mapDBSongsToModel);
   }
