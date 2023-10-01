@@ -1,5 +1,7 @@
 import {
-  createQuery, getQuery, getByIdQuery, updateByIdQuery, deleteByIdQuery, getQueryFilter,
+  createQuery, getQuery, getByIdQuery,
+  updateByIdQuery, deleteByIdQuery, getQueryFilter,
+  getJoinTwoTableQuery,
 } from '../../src/utils/index.js';
 
 describe('Test transform utils', () => {
@@ -71,6 +73,26 @@ describe('Test transform utils', () => {
     const query = deleteByIdQuery('1', 'songs');
     expect(query).toEqual({
       text: 'DELETE FROM songs WHERE id=$1 RETURNING id',
+      values: ['1'],
+    });
+  });
+
+  it('should success return get inner join two table query', () => {
+    const query = getJoinTwoTableQuery(
+      '1',
+      'notes',
+      'users',
+      'user_id',
+      'id',
+      ['user_id', 'title'],
+      ['id', 'username'],
+      'INNER JOIN',
+    );
+    expect(query).toEqual({
+      text: `SELECT t1.user_id,t1.title,t2.id,t2.username 
+      FROM notes t1
+      INNER JOIN users t2 ON t1.user_id = t2.id
+      WHERE t1.user_id = $1`,
       values: ['1'],
     });
   });

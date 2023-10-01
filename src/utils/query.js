@@ -27,11 +27,30 @@ const getByIdQuery = (id, table) => ({
   values: [id],
 });
 
-const getByIdJoinQuery = (id, table1, table2, pk1, pk2) => ({
-  text: `SELECT t1.id, t2.id, t2.title, t2.performer FROM ${table1} t1
-  INNER JOIN ${table2} t2 ON t1.${pk1} = t2.${pk2} WHERE t1.${pk1}=$1`,
-  values: [id],
-});
+const getJoinTwoTableQuery = (
+  id,
+  table1,
+  table2,
+  pk1,
+  pk2,
+  t1Columns,
+  t2Columns,
+  type = 'INNER JOIN',
+) => {
+  const t1ColumnString = t1Columns.map((column) => `t1.${column}`)
+    .toString();
+  const t2ColumnString = t2Columns.map((column) => `t2.${column}`)
+    .toString();
+  const columnString = [t1ColumnString, t2ColumnString].toString();
+
+  return {
+    text: `SELECT ${columnString} 
+      FROM ${table1} t1
+      ${type} ${table2} t2 ON t1.${pk1} = t2.${pk2}
+      WHERE t1.${pk1} = $1`,
+    values: [id],
+  };
+};
 
 const updateByIdQuery = (id, datas, table) => {
   const datasArray = Object.entries(datas);
@@ -56,7 +75,7 @@ const deleteByIdQuery = (id, table) => {
 export {
   createQuery,
   getQuery,
-  getByIdJoinQuery,
+  getJoinTwoTableQuery,
   getByIdQuery,
   updateByIdQuery,
   deleteByIdQuery,

@@ -2,11 +2,12 @@
 import { nanoid } from 'nanoid';
 import pg from 'pg';
 import {
-  createQuery, deleteByIdQuery, getByIdJoinQuery,
+  createQuery, deleteByIdQuery,
   getByIdQuery, getQuery, mapDBAlbumsToModel,
   mapDBSongsToModel, updateByIdQuery,
 } from '../../../utils/index.js';
 import NotFoundError from '../../exceptions/NotFoundException.js';
+import { getJoinTwoTableQuery } from '../../../utils/query.js';
 
 class AlbumService {
   constructor() {
@@ -41,7 +42,8 @@ class AlbumService {
   async getAlbumById(id) {
     let query = getByIdQuery(id, this._table);
     const result = await this._pool.query(query);
-    query = getByIdJoinQuery(id, this._table, 'songs', 'id', 'album_id');
+
+    query = getJoinTwoTableQuery(id, this._table, 'songs', 'id', 'album_id', ['id'], ['id', 'title', 'performer']);
     const resultSongs = await this._pool.query(query);
 
     if (!result.rows.length) throw new NotFoundError('album not found');
