@@ -1,16 +1,16 @@
 /* c8 ignore next 6 */
 import Hapi from '@hapi/hapi';
 import app from '../config/app.js';
-import AlbumService from './services/postgres/AlbumService.js';
-import albumValidator from './validators/albums/index.js';
-import songValidator from './validators/songs/index.js';
-import albumPlugin from './api/albums/index.js';
-import songPlugin from './api/songs/index.js';
-import SongService from './services/postgres/SongService.js';
+import AlbumsService from './services/postgres/AlbumsService.js';
+import albumsValidator from './validators/albums/index.js';
+import songsValidator from './validators/songs/index.js';
+import albumsPlugin from './api/albums/index.js';
+import songsPlugin from './api/songs/index.js';
+import SongsService from './services/postgres/SongsService.js';
 import ClientError from './exceptions/ClientError.js';
 
-const albumService = new AlbumService();
-const songService = new SongService();
+const albumsService = new AlbumsService();
+const songsService = new SongsService();
 const server = Hapi.server({
   host: app.host,
   port: app.port,
@@ -26,17 +26,17 @@ const server = Hapi.server({
 const registerPlugin = async () => {
   await server.register([
     {
-      plugin: albumPlugin,
+      plugin: albumsPlugin,
       options: {
-        service: albumService,
-        validator: albumValidator,
+        service: albumsService,
+        validator: albumsValidator,
       },
     },
     {
-      plugin: songPlugin,
+      plugin: songsPlugin,
       options: {
-        service: songService,
-        validator: songValidator,
+        service: songsService,
+        validator: songsValidator,
       },
     },
   ]);

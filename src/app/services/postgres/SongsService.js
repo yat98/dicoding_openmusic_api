@@ -7,7 +7,7 @@ import {
 } from '../../../utils/index.js';
 import NotFoundError from '../../exceptions/NotFoundException.js';
 
-class SongService {
+class SongsService {
   constructor() {
     const { Pool } = pg;
     this._table = 'songs';
@@ -79,4 +79,4 @@ class SongService {
   }
 }
 
-export default SongService;
+export default SongsService;

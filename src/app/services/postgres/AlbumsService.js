@@ -9,7 +9,7 @@ import {
 import NotFoundError from '../../exceptions/NotFoundException.js';
 import { getJoinTwoTableQuery } from '../../../utils/query.js';
 
-class AlbumService {
+class AlbumsService {
   constructor() {
     const { Pool } = pg;
     this._table = 'albums';
@@ -79,4 +79,4 @@ class AlbumService {
   }
 }
 
-export default AlbumService;
+export default AlbumsService;
