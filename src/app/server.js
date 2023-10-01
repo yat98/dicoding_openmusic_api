@@ -6,8 +6,8 @@ import albumValidator from './validators/albums/index.js';
 import songValidator from './validators/songs/index.js';
 import albumPlugin from './api/albums/index.js';
 import songPlugin from './api/songs/index.js';
-import NotFoundError from './exceptions/NotFoundException.js';
 import SongService from './services/postgres/SongService.js';
+import ClientError from './exceptions/ClientError.js';
 
 const albumService = new AlbumService();
 const songService = new SongService();
@@ -47,7 +47,7 @@ server.ext('onPreResponse', (req, h) => {
   const { response } = req;
 
   if (response instanceof Error) {
-    if (response instanceof NotFoundError) {
+    if (response instanceof ClientError) {
       return h.response({
         status: 'fail',
         message: response.message,
