@@ -10,16 +10,42 @@ const createQuery = (values, table) => {
 
 const getQuery = (table) => `SELECT * FROM ${table}`;
 
-const getQueryFilter = (datas, table) => {
+const getQueryCondition = (datas, table) => {
   let text = `SELECT * FROM ${table}`;
+  const values = [];
   const datasArray = Object.entries(datas);
   const filterExists = datasArray.filter((value) => value[1] !== undefined);
-  const params = filterExists.map((value) => `LOWER(${value[0]}) LIKE LOWER('%${value[1]}%')`)
+  const params = filterExists.map((value, index) => {
+    values.push(`${value[1]}`);
+    return `${value[0]} = $${index + 1}`;
+  })
     .toString()
     .replace(/,/g, ' AND ');
   if (params.length > 0) text += ` WHERE ${params}`;
 
-  return text;
+  return {
+    text,
+    values,
+  };
+};
+
+const getQueryFilter = (datas, table) => {
+  let text = `SELECT * FROM ${table}`;
+  const values = [];
+  const datasArray = Object.entries(datas);
+  const filterExists = datasArray.filter((value) => value[1] !== undefined);
+  const params = filterExists.map((value, index) => {
+    values.push(`%${value[1]}%`);
+    return `LOWER(${value[0]}) LIKE LOWER($${index + 1})`;
+  })
+    .toString()
+    .replace(/,/g, ' AND ');
+  if (params.length > 0) text += ` WHERE ${params}`;
+
+  return {
+    text,
+    values,
+  };
 };
 
 const getByIdQuery = (id, table) => ({
@@ -80,4 +106,5 @@ export {
   updateByIdQuery,
   deleteByIdQuery,
   getQueryFilter,
+  getQueryCondition,
 };

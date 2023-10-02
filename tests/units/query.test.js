@@ -2,6 +2,7 @@ import {
   createQuery, getQuery, getByIdQuery,
   updateByIdQuery, deleteByIdQuery, getQueryFilter,
   getJoinTwoTableQuery,
+  getQueryCondition,
 } from '../../src/utils/index.js';
 
 describe('Test transform utils', () => {
@@ -24,29 +25,68 @@ describe('Test transform utils', () => {
     expect(query).toBe('SELECT * FROM songs');
   });
 
+  it('should success return get query condition', () => {
+    const query = getQueryCondition({ title: 'cold', performer: 'chris' }, 'songs');
+    expect(query).toEqual({
+      text: 'SELECT * FROM songs WHERE title = $1 AND performer = $2',
+      values: ['cold', 'chris'],
+    });
+  });
+
+  it('should success return get query condition only one condition', () => {
+    const query = getQueryCondition({ title: 'cold' }, 'songs');
+    expect(query).toEqual({
+      text: 'SELECT * FROM songs WHERE title = $1',
+      values: ['cold'],
+    });
+  });
+
+  it('should success return get query condition without condition', () => {
+    const query = getQueryCondition({}, 'songs');
+    expect(query).toEqual({
+      text: 'SELECT * FROM songs',
+      values: [],
+    });
+  });
+
   it('should success return get query filter', () => {
     const query = getQueryFilter({ title: 'cold', performer: 'chris' }, 'songs');
-    expect(query).toBe("SELECT * FROM songs WHERE LOWER(title) LIKE LOWER('%cold%') AND LOWER(performer) LIKE LOWER('%chris%')");
+    expect(query).toEqual({
+      text: 'SELECT * FROM songs WHERE LOWER(title) LIKE LOWER($1) AND LOWER(performer) LIKE LOWER($2)',
+      values: ['%cold%', '%chris%'],
+    });
   });
 
   it('should success return get query filter only one filter', () => {
     const query = getQueryFilter({ title: 'cold' }, 'songs');
-    expect(query).toBe("SELECT * FROM songs WHERE LOWER(title) LIKE LOWER('%cold%')");
+    expect(query).toEqual({
+      text: 'SELECT * FROM songs WHERE LOWER(title) LIKE LOWER($1)',
+      values: ['%cold%'],
+    });
   });
 
   it('should success return get query filter when object is null', () => {
     const query = getQueryFilter({}, 'songs');
-    expect(query).toBe('SELECT * FROM songs');
+    expect(query).toEqual({
+      text: 'SELECT * FROM songs',
+      values: [],
+    });
   });
 
   it('should success return get query filter when object is undefined', () => {
     const query = getQueryFilter({ title: undefined, body: undefined }, 'songs');
-    expect(query).toBe('SELECT * FROM songs');
+    expect(query).toEqual({
+      text: 'SELECT * FROM songs',
+      values: [],
+    });
   });
 
   it('should success return get query filter when object is empty string', () => {
     const query = getQueryFilter({ title: '', body: undefined }, 'songs');
-    expect(query).toBe('SELECT * FROM songs WHERE LOWER(title) LIKE LOWER(\'%%\')');
+    expect(query).toEqual({
+      text: 'SELECT * FROM songs WHERE LOWER(title) LIKE LOWER($1)',
+      values: ['%%'],
+    });
   });
 
   it('should success return get query by id', () => {

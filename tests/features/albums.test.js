@@ -1,51 +1,10 @@
-import pg from 'pg';
 import server from '../../src/app/server.js';
-import { getByIdQuery, getQuery, mapDBAlbumsToModel } from '../../src/utils';
+import {
+  findAlbumId, firstAlbum, payloadAlbum,
+  payloadAlbumUpdate, payloadSong, removeAllAlbum, removeAllSong,
+} from '../utils/index.js';
 
 let request;
-const { Pool } = pg;
-const pool = new Pool();
-const payload = {
-  name: 'Lorem',
-  year: 2023,
-};
-const payloadUpdate = {
-  name: 'Lorem Ipsum',
-  year: 2022,
-};
-const payloadSong = {
-  title: 'Evaluasi',
-  year: 2023,
-  genre: 'Indie',
-  performer: 'Hindia',
-  duration: 240,
-};
-
-const firstAlbum = async () => {
-  const query = getQuery('albums');
-  const result = await pool.query(query);
-  return result.rows.map(mapDBAlbumsToModel)[0];
-};
-
-const findAlbumId = async (id) => {
-  const query = getByIdQuery(id, 'albums');
-  const result = await pool.query(query);
-  return result.rows.map(mapDBAlbumsToModel)[0];
-};
-
-const removeAllAlbum = async () => {
-  const query = {
-    text: 'DELETE FROM albums',
-  };
-  await pool.query(query);
-};
-
-const removeAllSong = async () => {
-  const query = {
-    text: 'DELETE FROM songs',
-  };
-  await pool.query(query);
-};
 
 beforeAll(async () => {
   request = await server.init();
@@ -63,15 +22,15 @@ describe('Test album feature: ', () => {
       const response = await request.inject({
         method: 'POST',
         url: '/albums',
-        payload,
+        payload: payloadAlbum,
       });
       const { name, year } = await findAlbumId(response.result.data.albumId);
       expect(response.statusCode).toBe(201);
       expect(response.result.status).toBeDefined();
       expect(response.result.data.albumId).toBeDefined();
       expect(response.result.status).toBe('success');
-      expect(name).toBe(payload.name);
-      expect(year).toEqual(payload.year);
+      expect(name).toBe(payloadAlbum.name);
+      expect(year).toEqual(payloadAlbum.year);
     });
 
     it('should reject add album', async () => {
@@ -170,7 +129,7 @@ describe('Test album feature: ', () => {
       const response = await request.inject({
         method: 'PUT',
         url: `/albums/${album.id}`,
-        payload: payloadUpdate,
+        payload: payloadAlbumUpdate,
       });
       const { name, year } = await findAlbumId(album.id);
       expect(response.statusCode).toBe(200);
@@ -178,8 +137,8 @@ describe('Test album feature: ', () => {
       expect(response.result.message).toBeDefined();
       expect(response.result.status).toBe('success');
       expect(response.result.message).toBe('album updated');
-      expect(name).toBe(payloadUpdate.name);
-      expect(year).toEqual(payloadUpdate.year);
+      expect(name).toBe(payloadAlbumUpdate.name);
+      expect(year).toEqual(payloadAlbumUpdate.year);
     });
 
     it('should reject update album', async () => {
@@ -200,7 +159,7 @@ describe('Test album feature: ', () => {
       const response = await request.inject({
         method: 'PUT',
         url: '/albums/invalidid',
-        payload,
+        payload: payloadAlbum,
       });
       expect(response.statusCode).toBe(404);
       expect(response.result.status).toBeDefined();
@@ -230,7 +189,7 @@ describe('Test album feature: ', () => {
       const response = await request.inject({
         method: 'DELETE',
         url: '/albums/invalidid',
-        payload,
+        payload: payloadAlbum,
       });
       expect(response.statusCode).toBe(404);
       expect(response.result.status).toBeDefined();

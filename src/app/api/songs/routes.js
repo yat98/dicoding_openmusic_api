@@ -4,7 +4,7 @@ const routes = (handler, validator) => [
     path: '/songs',
     handler: handler.postSongHandler,
     options: {
-      validate: validator.addSongValidation,
+      validate: validator.postSongValidation,
     },
   },
   {
@@ -22,7 +22,7 @@ const routes = (handler, validator) => [
     path: '/songs/{id}',
     handler: handler.putSongHandler,
     options: {
-      validate: validator.updateSongValidation,
+      validate: validator.putSongValidation,
     },
   },
   {

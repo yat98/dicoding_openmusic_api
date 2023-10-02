@@ -1,45 +1,9 @@
-import pg from 'pg';
 import server from '../../src/app/server.js';
 import {
-  getByIdQuery, getQuery, mapDBSongToModel, mapDBSongsToModel,
-} from '../../src/utils';
+  findSongId, firstSong, payloadSong, payloadUpdateSong, removeAllSong,
+} from '../utils/index.js';
 
 let request;
-const { Pool } = pg;
-const pool = new Pool();
-const payload = {
-  title: 'Evaluasi',
-  year: 2023,
-  genre: 'Indie',
-  performer: 'Hindia',
-  duration: 240,
-};
-const payloadUpdate = {
-  title: 'Lorem Ipsum',
-  year: 2023,
-  genre: 'Rock',
-  performer: 'Sit Dolor',
-  duration: 380,
-};
-
-const firstSong = async () => {
-  const query = getQuery('songs');
-  const result = await pool.query(query);
-  return result.rows.map(mapDBSongsToModel)[0];
-};
-
-const findSongId = async (id) => {
-  const query = getByIdQuery(id, 'songs');
-  const result = await pool.query(query);
-  return result.rows.map(mapDBSongToModel)[0];
-};
-
-const removeAllSong = async () => {
-  const query = {
-    text: 'DELETE FROM songs',
-  };
-  await pool.query(query);
-};
 
 beforeAll(async () => {
   request = await server.init();
@@ -56,7 +20,7 @@ describe('Test song feature: ', () => {
       const response = await request.inject({
         method: 'POST',
         url: '/songs',
-        payload,
+        payload: payloadSong,
       });
       const {
         title, performer, year, genre, duration,
@@ -65,11 +29,11 @@ describe('Test song feature: ', () => {
       expect(response.result.status).toBeDefined();
       expect(response.result.data.songId).toBeDefined();
       expect(response.result.status).toBe('success');
-      expect(title).toBe(payload.title);
-      expect(performer).toBe(payload.performer);
-      expect(year).toBe(payload.year);
-      expect(genre).toBe(payload.genre);
-      expect(duration).toBe(payload.duration);
+      expect(title).toBe(payloadSong.title);
+      expect(performer).toBe(payloadSong.performer);
+      expect(year).toBe(payloadSong.year);
+      expect(genre).toBe(payloadSong.genre);
+      expect(duration).toBe(payloadSong.duration);
     });
 
     it('should reject add song', async () => {
@@ -178,7 +142,7 @@ describe('Test song feature: ', () => {
       const response = await request.inject({
         method: 'PUT',
         url: `/songs/${song.id}`,
-        payload: payloadUpdate,
+        payload: payloadUpdateSong,
       });
       const {
         title, performer, year, genre, duration,
@@ -188,11 +152,11 @@ describe('Test song feature: ', () => {
       expect(response.result.message).toBeDefined();
       expect(response.result.status).toBe('success');
       expect(response.result.message).toBe('song updated');
-      expect(title).toBe(payloadUpdate.title);
-      expect(performer).toBe(payloadUpdate.performer);
-      expect(year).toEqual(payloadUpdate.year);
-      expect(genre).toEqual(payloadUpdate.genre);
-      expect(duration).toEqual(payloadUpdate.duration);
+      expect(title).toBe(payloadUpdateSong.title);
+      expect(performer).toBe(payloadUpdateSong.performer);
+      expect(year).toEqual(payloadUpdateSong.year);
+      expect(genre).toEqual(payloadUpdateSong.genre);
+      expect(duration).toEqual(payloadUpdateSong.duration);
     });
 
     it('should reject update song', async () => {
@@ -213,7 +177,7 @@ describe('Test song feature: ', () => {
       const response = await request.inject({
         method: 'PUT',
         url: '/songs/invalidid',
-        payload,
+        payload: payloadSong,
       });
       expect(response.statusCode).toBe(404);
       expect(response.result.status).toBeDefined();
@@ -243,7 +207,7 @@ describe('Test song feature: ', () => {
       const response = await request.inject({
         method: 'DELETE',
         url: '/songs/invalidid',
-        payload,
+        payload: payloadSong,
       });
       expect(response.statusCode).toBe(404);
       expect(response.result.status).toBeDefined();

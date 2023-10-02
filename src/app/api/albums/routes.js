@@ -4,7 +4,7 @@ const routes = (handler, validator) => [
     path: '/albums',
     handler: handler.postAlbumHandler,
     options: {
-      validate: validator.addAlbumValidation,
+      validate: validator.postAlbumValidation,
     },
   },
   {
@@ -22,7 +22,7 @@ const routes = (handler, validator) => [
     path: '/albums/{id}',
     handler: handler.putAlbumHandler,
     options: {
-      validate: validator.updateAlbumValidation,
+      validate: validator.putAlbumValidation,
     },
   },
   {
