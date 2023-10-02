@@ -134,3 +134,28 @@ export const payloadAuthenticationTwo = {
   username: payloadUserTwo.username,
   password: payloadUserTwo.password,
 };
+
+/**
+ * Playlists Utils
+ */
+
+export const payloadPlaylist = {
+  name: 'Lorem Playlist',
+};
+
+export const payloadUpdatePlaylist = {
+  name: 'Dolor Playlist',
+};
+
+export const firstPlaylist = async () => {
+  const query = getQuery('playlists');
+  const result = await pool.query(query);
+  return result.rows[0];
+};
+
+export const removeAllPlaylist = async () => {
+  const query = {
+    text: 'DELETE FROM playlists',
+  };
+  await pool.query(query);
+};

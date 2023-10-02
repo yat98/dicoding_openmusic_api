@@ -44,8 +44,19 @@ const mapDBSongToModel = ({
   });
 };
 
+const mapDBPlaylistsToModel = ({
+  id,
+  name,
+  username,
+}) => ({
+  id,
+  name,
+  username,
+});
+
 export {
   mapDBAlbumsToModel,
   mapDBSongsToModel,
   mapDBSongToModel,
+  mapDBPlaylistsToModel,
 };

@@ -19,6 +19,10 @@ import authenticationsPlugin from './api/authentications/index.js';
 import AuthenticationsService from './services/postgres/AuthenticationsService.js';
 import authenticationValidator from './validators/authentications/index.js';
 
+import playlistsPlugin from './api/playlists/index.js';
+import PlaylistsService from './services/postgres/PlaylistsService.js';
+import playlistValidator from './validators/playlists/index.js';
+
 import ClientError from './exceptions/ClientError.js';
 import TokenManager from './tokenize/TokenManager.js';
 import token from '../config/token.js';
@@ -27,6 +31,7 @@ const albumsService = new AlbumsService();
 const songsService = new SongsService();
 const usersService = new UsersService();
 const authenticationsService = new AuthenticationsService();
+const playlistService = new PlaylistsService();
 const server = Hapi.server({
   host: app.host,
   port: app.port,
@@ -48,7 +53,7 @@ const registerPlugin = async () => {
 
   /* c8 ignore next 15 */
   server.auth.strategy('openmusic_jwt', 'jwt', {
-    keys: token.accessTokenAge,
+    keys: token.accessTokenKey,
     verify: {
       aud: false,
       iss: false,
@@ -92,6 +97,13 @@ const registerPlugin = async () => {
         usersService,
         tokenManager: TokenManager,
         validator: authenticationValidator,
+      },
+    },
+    {
+      plugin: playlistsPlugin,
+      options: {
+        service: playlistService,
+        validator: playlistValidator,
       },
     },
   ]);

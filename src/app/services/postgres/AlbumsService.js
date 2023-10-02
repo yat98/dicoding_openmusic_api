@@ -19,13 +19,12 @@ class AlbumsService {
   async addAlbum({ name, year }) {
     const id = nanoid(16);
     const createdAt = new Date().toISOString();
-    const updatedAt = createdAt;
     const data = [
       id,
       name,
       year,
       createdAt,
-      updatedAt,
+      createdAt,
     ];
     const query = createQuery(data, this._table);
     const result = await this._pool.query(query);
