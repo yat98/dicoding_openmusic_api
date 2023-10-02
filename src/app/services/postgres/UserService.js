@@ -2,8 +2,11 @@
 import { nanoid } from 'nanoid';
 import pg from 'pg';
 import bcrypt from 'bcrypt';
-import { createQuery, getQueryCondition } from '../../../utils';
-import ValidationError from '../../exceptions/ValidationError';
+import {
+  createQuery, getQueryCondition,
+} from '../../../utils/index.js';
+import ValidationError from '../../exceptions/ValidationError.js';
+import AuthenticationError from '../../exceptions/AuthenticationError.js';
 
 class UsersService {
   constructor() {
@@ -33,12 +36,24 @@ class UsersService {
   }
 
   async verifyNewUsername(username) {
-    const query = getQueryCondition({ username }, this._table);
+    const query = getQueryCondition({ username }, [], this._table);
     const result = await this._pool.query(query);
 
     if (result.rows.length > 0) {
       throw new ValidationError('username already exists');
     }
+  }
+
+  async verifyUserCredential(username, password) {
+    const query = getQueryCondition({ username }, ['id', 'password'], this._table);
+    const result = await this._pool.query(query);
+    if (!result.rows.length) throw new AuthenticationError('username or password is wrong');
+
+    const { id, password: hashedPassword } = result.rows[0];
+    const match = await bcrypt.compare(password, hashedPassword);
+    if (!match) throw new AuthenticationError('username or password is wrong');
+
+    return id;
   }
 }
 

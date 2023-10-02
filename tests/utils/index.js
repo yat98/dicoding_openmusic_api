@@ -1,7 +1,8 @@
 import pg from 'pg';
 
 import {
-  getByIdQuery, getQuery, mapDBAlbumsToModel, mapDBSongToModel, mapDBSongsToModel,
+  getByIdQuery, getQuery, getQueryCondition,
+  mapDBAlbumsToModel, mapDBSongToModel, mapDBSongsToModel,
 } from '../../src/utils';
 
 const { Pool } = pg;
@@ -89,15 +90,47 @@ export const payloadUser = {
   fullname: 'Test Jest User',
 };
 
+export const payloadUserTwo = {
+  username: 'test_jest_user_2',
+  password: 'secretpassword',
+  fullname: 'Test Jest User 2',
+};
+
+export const firstUser = async () => {
+  const query = getQuery('users');
+  const result = await pool.query(query);
+  return result.rows[0];
+};
+
 export const findUserId = async (id) => {
   const query = getByIdQuery(id, 'users');
   const result = await pool.query(query);
   return result.rows[0];
 };
 
-export const removeAlluser = async () => {
+export const findUserByUsername = async (username) => {
+  const query = getQueryCondition({ username }, [], 'users');
+  const result = await pool.query(query);
+  return result.rows[0];
+};
+
+export const removeAllUser = async () => {
   const query = {
     text: 'DELETE FROM users',
   };
   await pool.query(query);
+};
+
+/**
+ * Authentications Utils
+ */
+
+export const payloadAuthentication = {
+  username: payloadUser.username,
+  password: payloadUser.password,
+};
+
+export const payloadAuthenticationTwo = {
+  username: payloadUserTwo.username,
+  password: payloadUserTwo.password,
 };

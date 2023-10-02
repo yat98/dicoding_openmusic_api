@@ -1,5 +1,6 @@
-/* c8 ignore next 16 */
+/* c8 ignore next 21 */
 import Hapi from '@hapi/hapi';
+import Jwt from '@hapi/jwt';
 import app from '../config/app.js';
 
 import albumsPlugin from './api/albums/index.js';
@@ -14,11 +15,18 @@ import usersPlugin from './api/users/index.js';
 import UsersService from './services/postgres/UserService.js';
 import usersValidator from './validators/users/index.js';
 
+import authenticationsPlugin from './api/authentications/index.js';
+import AuthenticationsService from './services/postgres/AuthenticationsService.js';
+import authenticationValidator from './validators/authentications/index.js';
+
 import ClientError from './exceptions/ClientError.js';
+import TokenManager from './tokenize/TokenManager.js';
+import token from '../config/token.js';
 
 const albumsService = new AlbumsService();
 const songsService = new SongsService();
 const usersService = new UsersService();
+const authenticationsService = new AuthenticationsService();
 const server = Hapi.server({
   host: app.host,
   port: app.port,
@@ -32,6 +40,29 @@ const server = Hapi.server({
 });
 
 const registerPlugin = async () => {
+  await server.register([
+    {
+      plugin: Jwt,
+    },
+  ]);
+
+  /* c8 ignore next 15 */
+  server.auth.strategy('openmusic_jwt', 'jwt', {
+    keys: token.accessTokenAge,
+    verify: {
+      aud: false,
+      iss: false,
+      sub: false,
+      maxAgeSec: token.accessTokenAge,
+    },
+    validate: (artifacts) => ({
+      isValid: true,
+      credentials: {
+        id: artifacts.decoded.payload.id,
+      },
+    }),
+  });
+
   await server.register([
     {
       plugin: albumsPlugin,
@@ -52,6 +83,15 @@ const registerPlugin = async () => {
       options: {
         service: usersService,
         validator: usersValidator,
+      },
+    },
+    {
+      plugin: authenticationsPlugin,
+      options: {
+        authenticationsService,
+        usersService,
+        tokenManager: TokenManager,
+        validator: authenticationValidator,
       },
     },
   ]);

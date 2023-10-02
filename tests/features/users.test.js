@@ -1,5 +1,5 @@
 import server from '../../src/app/server.js';
-import { findUserId, payloadUser, removeAlluser } from '../utils/index.js';
+import { findUserId, payloadUser, removeAllUser } from '../utils/index.js';
 
 let request;
 
@@ -8,7 +8,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await removeAlluser();
+  await removeAllUser();
   await request.stop();
 });
 

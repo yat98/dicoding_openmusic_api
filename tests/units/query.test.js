@@ -3,6 +3,8 @@ import {
   updateByIdQuery, deleteByIdQuery, getQueryFilter,
   getJoinTwoTableQuery,
   getQueryCondition,
+  updateByConditionQuery,
+  getFilteredQuery,
 } from '../../src/utils/index.js';
 
 describe('Test transform utils', () => {
@@ -25,8 +27,18 @@ describe('Test transform utils', () => {
     expect(query).toBe('SELECT * FROM songs');
   });
 
+  it('should success return get filterd query', () => {
+    const query = getFilteredQuery(['id', 'name'], 'songs');
+    expect(query).toBe('SELECT id,name FROM songs');
+  });
+
+  it('should success return get filterd query', () => {
+    const query = getFilteredQuery([], 'songs');
+    expect(query).toBe('SELECT * FROM songs');
+  });
+
   it('should success return get query condition', () => {
-    const query = getQueryCondition({ title: 'cold', performer: 'chris' }, 'songs');
+    const query = getQueryCondition({ title: 'cold', performer: 'chris' }, [], 'songs');
     expect(query).toEqual({
       text: 'SELECT * FROM songs WHERE title = $1 AND performer = $2',
       values: ['cold', 'chris'],
@@ -34,7 +46,7 @@ describe('Test transform utils', () => {
   });
 
   it('should success return get query condition only one condition', () => {
-    const query = getQueryCondition({ title: 'cold' }, 'songs');
+    const query = getQueryCondition({ title: 'cold' }, [], 'songs');
     expect(query).toEqual({
       text: 'SELECT * FROM songs WHERE title = $1',
       values: ['cold'],
@@ -42,9 +54,33 @@ describe('Test transform utils', () => {
   });
 
   it('should success return get query condition without condition', () => {
-    const query = getQueryCondition({}, 'songs');
+    const query = getQueryCondition({}, [], 'songs');
     expect(query).toEqual({
       text: 'SELECT * FROM songs',
+      values: [],
+    });
+  });
+
+  it('should success return get query condition', () => {
+    const query = getQueryCondition({ title: 'cold', performer: 'chris' }, ['id', 'title', 'performer'], 'songs');
+    expect(query).toEqual({
+      text: 'SELECT id,title,performer FROM songs WHERE title = $1 AND performer = $2',
+      values: ['cold', 'chris'],
+    });
+  });
+
+  it('should success return get query condition only one condition', () => {
+    const query = getQueryCondition({ title: 'cold' }, ['id', 'title', 'performer'], 'songs');
+    expect(query).toEqual({
+      text: 'SELECT id,title,performer FROM songs WHERE title = $1',
+      values: ['cold'],
+    });
+  });
+
+  it('should success return get query condition without condition', () => {
+    const query = getQueryCondition({}, ['id', 'title', 'performer'], 'songs');
+    expect(query).toEqual({
+      text: 'SELECT id,title,performer FROM songs',
       values: [],
     });
   });
@@ -106,6 +142,30 @@ describe('Test transform utils', () => {
     expect(query).toEqual({
       text: 'UPDATE songs SET title=$1,body=$2 WHERE id=$3 RETURNING id',
       values: [...Object.values(values), '1'],
+    });
+  });
+
+  it('should success return update query by condition', () => {
+    const values = {
+      title: 'Lorem',
+      body: 'lorem ipsum sit dolor',
+    };
+    const query = updateByConditionQuery(values, { title: 'lorem' }, 'songs', 'id');
+    expect(query).toEqual({
+      text: 'UPDATE songs SET title = $1,body = $2 WHERE title = $3 RETURNING id',
+      values: [...Object.values(values), 'lorem'],
+    });
+  });
+
+  it('should success return update query by condition without returnValue', () => {
+    const values = {
+      title: 'Lorem',
+      body: 'lorem ipsum sit dolor',
+    };
+    const query = updateByConditionQuery(values, { title: 'lorem' }, 'songs');
+    expect(query).toEqual({
+      text: 'UPDATE songs SET title = $1,body = $2 WHERE title = $3 RETURNING id',
+      values: [...Object.values(values), 'lorem'],
     });
   });
 

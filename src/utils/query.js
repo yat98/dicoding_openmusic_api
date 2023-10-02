@@ -10,8 +10,19 @@ const createQuery = (values, table) => {
 
 const getQuery = (table) => `SELECT * FROM ${table}`;
 
-const getQueryCondition = (datas, table) => {
-  let text = `SELECT * FROM ${table}`;
+const getFilteredQuery = (columns, table) => {
+  let params = columns.map((value) => `${value}`);
+  if (params.length > 0) params.toString();
+  else params = '*';
+  return `SELECT ${params} FROM ${table}`;
+};
+
+const getQueryCondition = (datas, columns, table) => {
+  let columnParams = columns.map((value) => `${value}`);
+  if (columnParams.length > 0) columnParams.toString();
+  else columnParams = '*';
+
+  let text = `SELECT ${columnParams} FROM ${table}`;
   const values = [];
   const datasArray = Object.entries(datas);
   const filterExists = datasArray.filter((value) => value[1] !== undefined);
@@ -78,6 +89,26 @@ const getJoinTwoTableQuery = (
   };
 };
 
+const updateByConditionQuery = (datas, condition, table, returnValue = 'id') => {
+  let conditionText = '';
+  const datasArray = Object.entries(datas);
+  const params = datasArray.map((value, index) => `${value[0]} = $${index + 1}`)
+    .toString();
+
+  const conditionArray = Object.entries(condition);
+  const filterExists = conditionArray.filter((value) => value[1] !== undefined);
+  const conditionParams = filterExists.map((value, index) => `${value[0]} = $${datasArray.length + index + 1}`)
+    .toString()
+    .replace(/,/g, ' AND ');
+  if (conditionParams.length > 0) conditionText += `WHERE ${conditionParams}`;
+
+  const text = `UPDATE ${table} SET ${params} ${conditionText} RETURNING ${returnValue}`;
+  return {
+    text,
+    values: [...Object.values(datas), ...Object.values(condition)],
+  };
+};
+
 const updateByIdQuery = (id, datas, table) => {
   const datasArray = Object.entries(datas);
   const params = datasArray.map((value, index) => `${value[0]}=$${index + 1}`)
@@ -107,4 +138,6 @@ export {
   deleteByIdQuery,
   getQueryFilter,
   getQueryCondition,
+  updateByConditionQuery,
+  getFilteredQuery,
 };
