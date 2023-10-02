@@ -11,8 +11,8 @@ class AuthenticationHandler {
   async postAuthenticationHandler(req, h) {
     const { username, password } = req.payload;
     const userId = await this._usersService.verifyUserCredential(username, password);
-    const accessToken = await this._tokenManager.generateAccessToken({ id: userId });
-    const refreshToken = await this._tokenManager.generateRefreshToken({ id: userId });
+    const accessToken = await this._tokenManager.generateAccessToken({ userId });
+    const refreshToken = await this._tokenManager.generateRefreshToken({ userId });
     await this._authenticationsService.addRefreshToken(userId, refreshToken);
 
     return h.response({
@@ -28,8 +28,8 @@ class AuthenticationHandler {
   async putAuthenticationHandler(req, h) {
     const { refreshToken } = req.payload;
     await this._authenticationsService.verifyRefreshToken(refreshToken);
-    const { id } = this._tokenManager.verifyRefreshToken(refreshToken);
-    const accessToken = this._tokenManager.generateAccessToken(id);
+    const { userId } = this._tokenManager.verifyRefreshToken(refreshToken);
+    const accessToken = this._tokenManager.generateAccessToken(userId);
 
     return h.response({
       status: 'success',
