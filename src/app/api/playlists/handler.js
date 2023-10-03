@@ -1,15 +1,16 @@
 import autoBind from 'auto-bind';
 
 class PlaylistHandler {
-  constructor(service) {
-    this._service = service;
+  constructor(playlistsService, playlistSongsService) {
+    this._playlistsService = playlistsService;
+    this._playlistSongsService = playlistSongsService;
     autoBind(this);
   }
 
   async postPlaylistHandler(req, h) {
     const { name } = req.payload;
     const { userId } = req.auth.credentials;
-    const playlistId = await this._service.addPlaylist({ name, userId });
+    const playlistId = await this._playlistsService.addPlaylist({ name, userId });
     return h.response({
       status: 'success',
       data: {
@@ -20,7 +21,7 @@ class PlaylistHandler {
 
   async getPlaylistsHandler(req, h) {
     const { userId } = req.auth.credentials;
-    const playlists = await this._service.getPlaylists(userId);
+    const playlists = await this._playlistsService.getPlaylists(userId);
     return h.response({
       status: 'success',
       data: {
@@ -32,8 +33,8 @@ class PlaylistHandler {
   async deletePlaylistHandler(req, h) {
     const { id } = req.params;
     const { userId } = req.auth.credentials;
-    await this._service.verifyPlaylistOwner(id, userId);
-    await this._service.deletePlaylistById(id);
+    await this._playlistsService.verifyPlaylistOwner(id, userId);
+    await this._playlistsService.deletePlaylistById(id);
     return h.response({
       status: 'success',
       message: 'playlist deleted',
@@ -43,8 +44,8 @@ class PlaylistHandler {
   async postSongInPlaylistHandler(req, h) {
     const { id } = req.params;
     const { userId } = req.auth.credentials;
-    await this._service.verifyPlaylistOwner(id, userId);
-    await this._service.addSongsInPlaylist(id, req.payload);
+    await this._playlistsService.verifyPlaylistOwner(id, userId);
+    await this._playlistSongsService.addSong(id, req.payload);
 
     return h.response({
       status: 'success',
@@ -55,8 +56,8 @@ class PlaylistHandler {
   async getSongInPlaylistHandler(req, h) {
     const { id } = req.params;
     const { userId } = req.auth.credentials;
-    await this._service.verifyPlaylistOwner(id, userId);
-    const playlists = await this._service.getSongInPlaylist(id, userId);
+    await this._playlistsService.verifyPlaylistOwner(id, userId);
+    const playlists = await this._playlistSongsService.getSongs(id, userId);
 
     return h.response({
       status: 'success',
@@ -69,8 +70,8 @@ class PlaylistHandler {
   async deleteSongInPlaylistHandler(req, h) {
     const { id } = req.params;
     const { userId } = req.auth.credentials;
-    await this._service.verifyPlaylistOwner(id, userId);
-    await this._service.deleteSongInPlaylist(id, req.payload);
+    await this._playlistsService.verifyPlaylistOwner(id, userId);
+    await this._playlistSongsService.deleteSong(id, req.payload);
 
     return h.response({
       status: 'success',

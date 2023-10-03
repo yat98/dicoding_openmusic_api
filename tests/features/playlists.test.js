@@ -225,6 +225,14 @@ describe('Test playlist feature: ', () => {
         payload: {
           songId,
         },
+      });
+
+      response = await request.inject({
+        method: 'POST',
+        url: `/playlists/${playlistId}/songs`,
+        payload: {
+          songId,
+        },
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },

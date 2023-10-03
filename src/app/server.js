@@ -1,4 +1,4 @@
-/* c8 ignore next 21 */
+/* c8 ignore next 22 */
 import Hapi from '@hapi/hapi';
 import Jwt from '@hapi/jwt';
 import app from '../config/app.js';
@@ -21,6 +21,7 @@ import authenticationValidator from './validators/authentications/index.js';
 
 import playlistsPlugin from './api/playlists/index.js';
 import PlaylistsService from './services/postgres/PlaylistsService.js';
+import PlaylistSongsService from './services/postgres/PlaylistSongsService.js';
 import playlistValidator from './validators/playlists/index.js';
 
 import ClientError from './exceptions/ClientError.js';
@@ -31,7 +32,8 @@ const albumsService = new AlbumsService();
 const songsService = new SongsService();
 const usersService = new UsersService();
 const authenticationsService = new AuthenticationsService();
-const playlistService = new PlaylistsService(songsService);
+const playlistsService = new PlaylistsService(songsService);
+const playlistSongsService = new PlaylistSongsService(songsService);
 const server = Hapi.server({
   host: app.host,
   port: app.port,
@@ -102,7 +104,8 @@ const registerPlugin = async () => {
     {
       plugin: playlistsPlugin,
       options: {
-        service: playlistService,
+        playlistsService,
+        playlistSongsService,
         validator: playlistValidator,
       },
     },
@@ -132,6 +135,7 @@ server.ext('onPreResponse', (req, h) => {
     if (app.mode === 'production') {
       res.message = 'server error';
     }
+    console.log(response.message);
     return h.response(res).code(500);
   }
 
