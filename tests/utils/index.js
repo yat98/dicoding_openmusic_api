@@ -1,7 +1,7 @@
 import pg from 'pg';
 
 import {
-  getByIdQuery, getQuery, getQueryCondition,
+  getByIdQuery, getQuery, getConditionQuery,
   mapDBAlbumsToModel, mapDBSongToModel, mapDBSongsToModel,
 } from '../../src/utils';
 
@@ -109,7 +109,7 @@ export const findUserId = async (id) => {
 };
 
 export const findUserByUsername = async (username) => {
-  const query = getQueryCondition({ username }, [], 'users');
+  const query = getConditionQuery({ username }, [], 'users');
   const result = await pool.query(query);
   return result.rows[0];
 };
@@ -147,6 +147,12 @@ export const payloadUpdatePlaylist = {
   name: 'Dolor Playlist',
 };
 
+export const findPlaylistId = async (id) => {
+  const query = getByIdQuery(id, 'playlists');
+  const result = await pool.query(query);
+  return result.rows[0];
+};
+
 export const firstPlaylist = async () => {
   const query = getQuery('playlists');
   const result = await pool.query(query);
@@ -156,6 +162,17 @@ export const firstPlaylist = async () => {
 export const removeAllPlaylist = async () => {
   const query = {
     text: 'DELETE FROM playlists',
+  };
+  await pool.query(query);
+};
+
+/**
+ * Playlist Songs Utils
+ */
+
+export const removeAllPlaylistSong = async () => {
+  const query = {
+    text: 'DELETE FROM playlist_songs',
   };
   await pool.query(query);
 };

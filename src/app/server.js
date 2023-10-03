@@ -31,7 +31,7 @@ const albumsService = new AlbumsService();
 const songsService = new SongsService();
 const usersService = new UsersService();
 const authenticationsService = new AuthenticationsService();
-const playlistService = new PlaylistsService();
+const playlistService = new PlaylistsService(songsService);
 const server = Hapi.server({
   host: app.host,
   port: app.port,

@@ -7,6 +7,7 @@ let request;
 
 beforeAll(async () => {
   request = await server.init();
+  await removeAllSong();
 });
 
 afterAll(async () => {

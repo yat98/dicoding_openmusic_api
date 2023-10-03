@@ -3,7 +3,7 @@ import { nanoid } from 'nanoid';
 import pg from 'pg';
 import bcrypt from 'bcrypt';
 import {
-  createQuery, getQueryCondition,
+  createQuery, getConditionQuery,
 } from '../../../utils/index.js';
 import ValidationError from '../../exceptions/ValidationError.js';
 import AuthenticationError from '../../exceptions/AuthenticationError.js';
@@ -36,7 +36,7 @@ class UsersService {
   }
 
   async verifyNewUsername(username) {
-    const query = getQueryCondition({ username }, [], this._table);
+    const query = getConditionQuery({ username }, [], this._table);
     const result = await this._pool.query(query);
 
     if (result.rows.length > 0) {
@@ -45,7 +45,7 @@ class UsersService {
   }
 
   async verifyUserCredential(username, password) {
-    const query = getQueryCondition({ username }, ['id', 'password'], this._table);
+    const query = getConditionQuery({ username }, ['id', 'password'], this._table);
     const result = await this._pool.query(query);
     if (!result.rows.length) throw new AuthenticationError('username or password is wrong');
 

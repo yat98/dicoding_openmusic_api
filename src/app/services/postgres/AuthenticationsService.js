@@ -1,6 +1,6 @@
 /* c8 ignore next 2 */
 import pg from 'pg';
-import { getQueryCondition, updateByConditionQuery, updateByIdQuery } from '../../../utils/index.js';
+import { getConditionQuery, updateByConditionQuery, updateByIdQuery } from '../../../utils/index.js';
 import ValidationError from '../../exceptions/ValidationError.js';
 
 class AuthenticationsService {
@@ -16,7 +16,7 @@ class AuthenticationsService {
   }
 
   async verifyRefreshToken(token) {
-    const query = getQueryCondition({ token }, ['token'], this._table);
+    const query = getConditionQuery({ token }, ['token'], this._table);
     const result = await this._pool.query(query);
     if (!result.rows.length) throw new ValidationError('token is invalid');
   }

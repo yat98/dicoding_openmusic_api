@@ -2,7 +2,7 @@
 import { nanoid } from 'nanoid';
 import pg from 'pg';
 import {
-  createQuery, deleteByIdQuery, getByIdQuery, getQueryFilter, mapDBSongToModel,
+  createQuery, deleteByIdQuery, getByIdQuery, getFilteredConditionQuery, mapDBSongToModel,
   mapDBSongsToModel, updateByIdQuery,
 } from '../../../utils/index.js';
 import NotFoundError from '../../exceptions/NotFoundException.js';
@@ -17,7 +17,7 @@ class SongsService {
   async addSong({
     albumId, title, year, genre, performer, duration,
   }) {
-    const id = nanoid(16);
+    const id = `song-${nanoid(16)}`;
     const createdAt = new Date().toISOString();
     const data = [
       id,
@@ -37,7 +37,7 @@ class SongsService {
   }
 
   async getSongs(filter) {
-    const query = getQueryFilter(filter, this._table);
+    const query = getFilteredConditionQuery(filter, this._table);
     const result = await this._pool.query(query);
     return result.rows.map(mapDBSongsToModel);
   }
@@ -73,6 +73,13 @@ class SongsService {
 
   async deleteSongById(id) {
     const query = deleteByIdQuery(id, this._table);
+    const result = await this._pool.query(query);
+
+    if (!result.rows.length) throw new NotFoundError('song not found');
+  }
+
+  async verifySongExists(id) {
+    const query = getByIdQuery(id, this._table);
     const result = await this._pool.query(query);
 
     if (!result.rows.length) throw new NotFoundError('song not found');

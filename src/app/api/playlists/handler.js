@@ -39,6 +39,44 @@ class PlaylistHandler {
       message: 'playlist deleted',
     });
   }
+
+  async postSongInPlaylistHandler(req, h) {
+    const { id } = req.params;
+    const { userId } = req.auth.credentials;
+    await this._service.verifyPlaylistOwner(id, userId);
+    await this._service.addSongsInPlaylist(id, req.payload);
+
+    return h.response({
+      status: 'success',
+      message: 'success add song to playlist',
+    }).code(201);
+  }
+
+  async getSongInPlaylistHandler(req, h) {
+    const { id } = req.params;
+    const { userId } = req.auth.credentials;
+    await this._service.verifyPlaylistOwner(id, userId);
+    const playlists = await this._service.getSongInPlaylist(id, userId);
+
+    return h.response({
+      status: 'success',
+      data: {
+        playlists,
+      },
+    });
+  }
+
+  async deleteSongInPlaylistHandler(req, h) {
+    const { id } = req.params;
+    const { userId } = req.auth.credentials;
+    await this._service.verifyPlaylistOwner(id, userId);
+    await this._service.deleteSongInPlaylist(id, req.payload);
+
+    return h.response({
+      status: 'success',
+      message: 'success add song to playlist',
+    });
+  }
 }
 
 export default PlaylistHandler;
