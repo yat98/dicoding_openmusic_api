@@ -4,11 +4,14 @@ import {
   getFilteredQuery, getJoinTwoTableConditionQuery, deleteByConditionQuery,
   getJoinTableOrConditionQuery,
 } from './query.js';
-import { mapDBAlbumsToModel, mapDBSongsToModel, mapDBSongToModel } from './transform.js';
+import {
+  mapDBAlbumsToModel, mapDBSongsToModel, mapDBSongToModel, mapDBPlaylistActivitiesToModel,
+} from './transform.js';
 
 export {
   createQuery, getQuery, getByIdQuery, updateByIdQuery, deleteByIdQuery,
   getJoinTwoTableQuery, mapDBAlbumsToModel, mapDBSongsToModel, mapDBSongToModel,
   getFilteredConditionQuery, getConditionQuery, updateByConditionQuery, getFilteredQuery,
   getJoinTwoTableConditionQuery, deleteByConditionQuery, getJoinTableOrConditionQuery,
+  mapDBPlaylistActivitiesToModel,
 };

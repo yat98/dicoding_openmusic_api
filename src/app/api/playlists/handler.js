@@ -1,10 +1,11 @@
 import autoBind from 'auto-bind';
 
 class PlaylistHandler {
-  constructor(playlistsService, songsService, playlistSongsService) {
+  constructor(playlistsService, songsService, playlistSongsService, playlistActivitiesService) {
     this._playlistsService = playlistsService;
     this._songService = songsService;
     this._playlistSongsService = playlistSongsService;
+    this._playlistActivitiesService = playlistActivitiesService;
     autoBind(this);
   }
 
@@ -50,6 +51,7 @@ class PlaylistHandler {
     await this._playlistsService.verifyPlaylistAccess(id, userId);
     await this._playlistSongsService.verifySongNotExistsInPlaylist(id, songId);
     await this._playlistSongsService.addSong(id, { songId });
+    await this._playlistActivitiesService.addActivity(userId, id, songId, 'add');
 
     return h.response({
       status: 'success',
@@ -71,15 +73,29 @@ class PlaylistHandler {
     });
   }
 
-  async deleteSongInPlaylistHandler(req, h) {
+  async deleteSongsInPlaylistHandler(req, h) {
     const { id } = req.params;
     const { userId } = req.auth.credentials;
+    const { songId } = req.payload;
     await this._playlistsService.verifyPlaylistAccess(id, userId);
-    await this._playlistSongsService.deleteSong(id, req.payload);
+    await this._playlistSongsService.deleteSong(id, { songId });
+    await this._playlistActivitiesService.addActivity(userId, id, songId, 'delete');
 
     return h.response({
       status: 'success',
       message: 'success delete song to playlist',
+    });
+  }
+
+  async getActivitiesInPlaylistHandler(req, h) {
+    const { id } = req.params;
+    const { userId } = req.auth.credentials;
+    await this._playlistsService.verifyPlaylistAccess(id, userId);
+    const data = await this._playlistActivitiesService.getActivities(id);
+
+    return h.response({
+      status: 'success',
+      data,
     });
   }
 }

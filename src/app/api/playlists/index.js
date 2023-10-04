@@ -6,12 +6,13 @@ export default {
   name: 'playlists',
   version: '1.0.0',
   register: (server, {
-    playlistsService, songsService, playlistSongsService, validator,
+    playlistsService, songsService, playlistSongsService, playlistActivitiesService, validator,
   }) => {
     const playlistHandler = new PlaylistHandler(
       playlistsService,
       songsService,
       playlistSongsService,
+      playlistActivitiesService,
     );
     server.route(routes(playlistHandler, validator));
   },

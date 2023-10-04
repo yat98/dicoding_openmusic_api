@@ -102,6 +102,12 @@ export const payloadUserThree = {
   fullname: 'Test Jest User 3',
 };
 
+export const payloadUserFour = {
+  username: 'test_jest_user_4',
+  password: 'secretpassword',
+  fullname: 'Test Jest User 4',
+};
+
 export const firstUser = async () => {
   const query = getQuery('users');
   const result = await pool.query(query);
@@ -144,6 +150,11 @@ export const payloadAuthenticationTwo = {
 export const payloadAuthenticationThree = {
   username: payloadUserThree.username,
   password: payloadUserThree.password,
+};
+
+export const payloadAuthenticationFour = {
+  username: payloadUserFour.username,
+  password: payloadUserFour.password,
 };
 
 /**
@@ -195,6 +206,17 @@ export const removeAllPlaylistSong = async () => {
 export const removeAllCollaboration = async () => {
   const query = {
     text: 'DELETE FROM collaborations',
+  };
+  await pool.query(query);
+};
+
+/**
+ * Playlist Activities Utils
+ */
+
+export const removeAllPlaylistActivities = async () => {
+  const query = {
+    text: 'DELETE FROM playlist_activities',
   };
   await pool.query(query);
 };

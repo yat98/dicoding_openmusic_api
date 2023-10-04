@@ -3,7 +3,7 @@ import { nanoid } from 'nanoid';
 import pg from 'pg';
 import {
   createQuery, deleteByIdQuery,
-  getConditionQuery, getJoinTwoTableConditionQuery,
+  getConditionQuery, getJoinTableOrConditionQuery,
 } from '../../../utils/index.js';
 import { mapDBPlaylistsToModel } from '../../../utils/transform.js';
 import NotFoundError from '../../exceptions/NotFoundException.js';
@@ -16,7 +16,7 @@ class PlaylistsService {
     this._tableUser = 'users';
     this._tableSong = 'songs';
     this._tablePlaylist = 'playlist';
-    this._tableCollaborations = 'collaborations';
+    this._tableCollaboration = 'collaborations';
     this._pool = new Pool();
     this._songService = songService;
     this._collaborationService = collaborationService;
@@ -40,15 +40,13 @@ class PlaylistsService {
   }
 
   async getPlaylists(userId) {
-    const query = getJoinTwoTableConditionQuery(
+    const query = getJoinTableOrConditionQuery(
       this._table,
-      this._tableUser,
-      'owner',
-      'id',
-      ['id', 'owner', 'name'],
-      ['username'],
-      { owner: userId },
-      {},
+      [`${this._table}.id`, `${this._table}.owner`, `${this._table}.name`, `${this._tableUser}.username`],
+      `LEFT JOIN ${this._tableUser} ON ${this._tableUser}.id = ${this._table}.owner 
+      LEFT JOIN ${this._tableCollaboration} ON ${this._tableCollaboration}.playlist_id = ${this._table}.id`,
+      'WHERE collaborations.user_id = $1 OR playlists.owner = $2',
+      [userId, userId],
     );
 
     const result = await this._pool.query(query);

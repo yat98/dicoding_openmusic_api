@@ -1,5 +1,5 @@
 import { mapDBAlbumsToModel, mapDBSongsToModel, mapDBSongToModel } from '../../src/utils/index.js';
-import { mapDBPlaylistsToModel } from '../../src/utils/transform.js';
+import { mapDBPlaylistActivitiesToModel, mapDBPlaylistsToModel } from '../../src/utils/transform.js';
 
 describe('Test transform utils', () => {
   it('should transform albums model', () => {
@@ -80,6 +80,23 @@ describe('Test transform utils', () => {
       id: 1,
       name: 'Ipsum',
       username: 'Lorem',
+    });
+  });
+
+  it('should transform playlist activities model', () => {
+    const playlist = mapDBPlaylistActivitiesToModel({
+      username: 'John',
+      title: 'Lorem',
+      action: 'add',
+      time: '2021-09-13T08:06:20.600Z',
+      id: 1,
+    });
+
+    expect(playlist).toEqual({
+      username: 'John',
+      title: 'Lorem',
+      action: 'add',
+      time: '2021-09-13T08:06:20.600Z',
     });
   });
 });

@@ -1,9 +1,11 @@
 import server from '../../src/app/server.js';
 import {
   firstPlaylist, firstSong, payloadAuthentication,
+  payloadAuthenticationFour,
   payloadAuthenticationThree, payloadAuthenticationTwo, payloadPlaylist,
-  payloadSong, payloadUser, payloadUserThree, payloadUserTwo,
+  payloadSong, payloadUser, payloadUserFour, payloadUserThree, payloadUserTwo,
   removeAllCollaboration, removeAllPlaylist,
+  removeAllPlaylistActivities,
   removeAllPlaylistSong, removeAllUser,
 } from '../utils/index.js';
 
@@ -15,6 +17,7 @@ let songId = '';
 
 beforeAll(async () => {
   request = await server.init();
+  await removeAllPlaylistActivities();
   await removeAllPlaylistSong();
   await removeAllPlaylist();
   await removeAllCollaboration();
@@ -22,6 +25,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await removeAllPlaylistActivities();
   await removeAllPlaylistSong();
   await removeAllPlaylist();
   await removeAllCollaboration();
@@ -126,6 +130,57 @@ describe('Test playlist feature: ', () => {
       expect(response.result.data.playlists).toBeDefined();
       expect(response.result.status).toBe('success');
       expect(response.result.data.playlists.length).toBe(0);
+    });
+
+    it('should success get list playlist use user collabolator has songs', async () => {
+      let response = await request.inject({
+        method: 'POST',
+        url: '/users',
+        payload: payloadUserFour,
+      });
+      const userFourId = response.result.data.userId;
+
+      response = await request.inject({
+        method: 'POST',
+        url: '/playlists',
+        payload: payloadPlaylist,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      response = await request.inject({
+        method: 'POST',
+        url: '/collaborations',
+        payload: {
+          userId: userFourId,
+          playlistId: response.result.data.playlistId,
+        },
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      response = await request.inject({
+        method: 'POST',
+        url: '/authentications',
+        payload: payloadAuthenticationFour,
+      });
+      const localAccessToken = response.result.data.accessToken;
+
+      response = await request.inject({
+        method: 'GET',
+        url: '/playlists',
+        headers: {
+          Authorization: `Bearer ${localAccessToken}`,
+        },
+      });
+
+      expect(response.statusCode).toBe(200);
+      expect(response.result.status).toBeDefined();
+      expect(response.result.data.playlists).toBeDefined();
+      expect(response.result.status).toBe('success');
+      expect(response.result.data.playlists.length).toBe(1);
     });
   });
 
@@ -681,6 +736,125 @@ describe('Test playlist feature: ', () => {
       expect(response.result.message).toBeDefined();
       expect(response.result.status).toBe('success');
       expect(response.result.message).toBe('success delete song to playlist');
+    });
+  });
+
+  describe('GET /playlist/{id}/activities', () => {
+    it('should success get list playlist activities', async () => {
+      const response = await request.inject({
+        method: 'GET',
+        url: `/playlists/${playlistId}/activities`,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      expect(response.statusCode).toBe(200);
+      expect(response.result.status).toBeDefined();
+      expect(response.result.data.playlistId).toBeDefined();
+      expect(response.result.data.activities).toBeDefined();
+      expect(response.result.status).toBe('success');
+      expect(Array.isArray(response.result.data.activities)).toBe(true);
+      expect(response.result.data.activities[0].username).toBeDefined();
+      expect(response.result.data.activities[0].title).toBeDefined();
+      expect(response.result.data.activities[0].action).toBeDefined();
+      expect(response.result.data.activities[0].time).toBeDefined();
+    });
+
+    it('should success get playlist activities use another user has no songs', async () => {
+      let localAccessToken = '';
+      let response = await request.inject({
+        method: 'POST',
+        url: '/authentications',
+        payload: payloadAuthenticationTwo,
+      });
+      localAccessToken = response.result.data.accessToken;
+
+      response = await request.inject({
+        method: 'POST',
+        url: '/playlists',
+        payload: payloadPlaylist,
+        headers: {
+          Authorization: `Bearer ${localAccessToken}`,
+        },
+      });
+
+      response = await request.inject({
+        method: 'GET',
+        url: `/playlists/${response.result.data.playlistId}/activities`,
+        headers: {
+          Authorization: `Bearer ${localAccessToken}`,
+        },
+      });
+      expect(response.statusCode).toBe(200);
+      expect(response.result.status).toBeDefined();
+      expect(response.result.data.playlistId).toBeDefined();
+      expect(response.result.data.activities).toBeDefined();
+      expect(response.result.status).toBe('success');
+      expect(Array.isArray(response.result.data.activities)).toBe(true);
+      expect(response.result.data.activities.length).toBe(0);
+    });
+
+    it('should reject get playlist activities use not user owner', async () => {
+      let response = await request.inject({
+        method: 'POST',
+        url: '/authentications',
+        payload: payloadAuthenticationTwo,
+      });
+
+      response = await request.inject({
+        method: 'GET',
+        url: `/playlists/${playlistId}/activities`,
+        headers: {
+          Authorization: `Bearer ${response.result.data.accessToken}`,
+        },
+      });
+      expect(response.statusCode).toBe(403);
+      expect(response.result.status).toBeDefined();
+      expect(response.result.message).toBeDefined();
+      expect(response.result.status).toBe('fail');
+      expect(response.result.message).toBe('unauthorized');
+    });
+
+    it('should reject get list playlist activities use invalid playlist id', async () => {
+      const response = await request.inject({
+        method: 'GET',
+        url: '/playlists/xxxx/activities',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      expect(response.statusCode).toBe(404);
+      expect(response.result.status).toBeDefined();
+      expect(response.result.message).toBeDefined();
+      expect(response.result.status).toBe('fail');
+      expect(response.result.message).toBe('playlist not found');
+    });
+
+    it('should success get playlist activities use user collabolator has songs', async () => {
+      let response = await request.inject({
+        method: 'POST',
+        url: '/authentications',
+        payload: payloadAuthenticationThree,
+      });
+      const localAccessToken = response.result.data.accessToken;
+
+      response = await request.inject({
+        method: 'GET',
+        url: `/playlists/${playlistId}/activities`,
+        headers: {
+          Authorization: `Bearer ${localAccessToken}`,
+        },
+      });
+      expect(response.statusCode).toBe(200);
+      expect(response.result.status).toBeDefined();
+      expect(response.result.data.playlistId).toBeDefined();
+      expect(response.result.data.activities).toBeDefined();
+      expect(response.result.status).toBe('success');
+      expect(Array.isArray(response.result.data.activities)).toBe(true);
+      expect(response.result.data.activities[0].username).toBeDefined();
+      expect(response.result.data.activities[0].title).toBeDefined();
+      expect(response.result.data.activities[0].action).toBeDefined();
+      expect(response.result.data.activities[0].time).toBeDefined();
     });
   });
 });

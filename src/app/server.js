@@ -31,6 +31,7 @@ import collaborationsValidator from './validators/collaborations/index.js';
 import ClientError from './exceptions/ClientError.js';
 import TokenManager from './tokenize/TokenManager.js';
 import token from '../config/token.js';
+import PlaylistActivitiesService from './services/postgres/PlaylistActivitiesService.js';
 
 const albumsService = new AlbumsService();
 const songsService = new SongsService();
@@ -39,6 +40,7 @@ const authenticationsService = new AuthenticationsService();
 const collaborationsService = new CollaborationsService();
 const playlistsService = new PlaylistsService(songsService, collaborationsService);
 const playlistSongsService = new PlaylistSongsService();
+const playlistActivitiesService = new PlaylistActivitiesService();
 
 const server = Hapi.server({
   host: app.host,
@@ -113,6 +115,7 @@ const registerPlugin = async () => {
         playlistsService,
         songsService,
         playlistSongsService,
+        playlistActivitiesService,
         validator: playlistValidator,
       },
     },
