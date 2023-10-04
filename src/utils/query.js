@@ -138,6 +138,29 @@ const getJoinTwoTableConditionQuery = (
   };
 };
 
+const getJoinTableOrConditionQuery = (
+  table,
+  columns,
+  relations,
+  conditions = null,
+  values = [],
+  groupBy = null,
+) => {
+  let text = '';
+  const columnString = columns.map((column) => `${column}`)
+    .toString();
+
+  text = `SELECT ${columnString} FROM ${table} ${relations}`;
+
+  if (values.length > 0) text += ` ${conditions}`;
+  if (groupBy !== null) text += ` GROUP BY ${groupBy}`;
+
+  return {
+    text,
+    values,
+  };
+};
+
 const updateByConditionQuery = (datas, condition, table, returnValue = 'id') => {
   let conditionText = '';
   const datasArray = Object.entries(datas);
@@ -211,4 +234,5 @@ export {
   getFilteredQuery,
   getJoinTwoTableConditionQuery,
   deleteByConditionQuery,
+  getJoinTableOrConditionQuery,
 };

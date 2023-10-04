@@ -10,14 +10,16 @@ import NotFoundError from '../../exceptions/NotFoundException.js';
 import AuthorizationError from '../../exceptions/AuthorizationError.js';
 
 class PlaylistsService {
-  constructor(songService) {
+  constructor(songService, collaborationService) {
     const { Pool } = pg;
     this._table = 'playlists';
     this._tableUser = 'users';
     this._tableSong = 'songs';
-    this._tablePlaylistSongs = 'playlist_songs';
+    this._tablePlaylist = 'playlist';
+    this._tableCollaborations = 'collaborations';
     this._pool = new Pool();
     this._songService = songService;
+    this._collaborationService = collaborationService;
   }
 
   async addPlaylist({ name, userId }) {
@@ -69,6 +71,22 @@ class PlaylistsService {
 
     if (playlist.owner !== owner) throw new AuthorizationError('unauthorized');
     return playlist;
+  }
+
+  async verifyPlaylistAccess(playlistId, userId) {
+    try {
+      await this.verifyPlaylistOwner(playlistId, userId);
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        throw error;
+      }
+
+      try {
+        await this._collaborationService.verifyCollaboration(playlistId, userId);
+      } catch {
+        throw error;
+      }
+    }
   }
 }
 

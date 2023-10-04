@@ -7,6 +7,7 @@ import {
   getFilteredQuery,
   getJoinTwoTableConditionQuery,
   deleteByConditionQuery,
+  getJoinTableOrConditionQuery,
 } from '../../src/utils/index.js';
 
 describe('Test transform utils', () => {
@@ -258,5 +259,40 @@ describe('Test transform utils', () => {
       text: 'DELETE FROM playlist_songs WHERE playlist_id = $1 AND song_id = $2 RETURNING id',
       values: ['1', '2'],
     });
+  });
+
+  it('should success return get join table or condition query', () => {
+    const query = getJoinTableOrConditionQuery(
+      'playlists',
+      ['playlists.id', 'playlists.name', 'users.username'],
+      'INNER JOIN users ON users.id = playlists.owner INNER JOIN collaborations ON collaborations.playlist_id = playlists.id',
+      'WHERE collabolators.user_id = $1 OR playlists.owner = $2',
+      ['1', '1'],
+      'playlists.id',
+    );
+    expect(query.text).toBe('SELECT playlists.id,playlists.name,users.username FROM playlists INNER JOIN users ON users.id = playlists.owner INNER JOIN collaborations ON collaborations.playlist_id = playlists.id WHERE collabolators.user_id = $1 OR playlists.owner = $2 GROUP BY playlists.id');
+    expect(query.values).toEqual(['1', '1']);
+  });
+
+  it('should success return get join table or condition query without group by', () => {
+    const query = getJoinTableOrConditionQuery(
+      'playlists',
+      ['playlists.id', 'playlists.name', 'users.username'],
+      'INNER JOIN users ON users.id = playlists.owner INNER JOIN collaborations ON collaborations.playlist_id = playlists.id',
+      'WHERE collabolators.user_id = $1 OR playlists.owner = $2',
+      ['1', '1'],
+    );
+    expect(query.text).toBe('SELECT playlists.id,playlists.name,users.username FROM playlists INNER JOIN users ON users.id = playlists.owner INNER JOIN collaborations ON collaborations.playlist_id = playlists.id WHERE collabolators.user_id = $1 OR playlists.owner = $2');
+    expect(query.values).toEqual(['1', '1']);
+  });
+
+  it('should success return get join table or condition query without condition', () => {
+    const query = getJoinTableOrConditionQuery(
+      'playlists',
+      ['playlists.id', 'playlists.name', 'users.username'],
+      'INNER JOIN users ON users.id = playlists.owner INNER JOIN collaborations ON collaborations.playlist_id = playlists.id',
+    );
+    expect(query.text).toBe('SELECT playlists.id,playlists.name,users.username FROM playlists INNER JOIN users ON users.id = playlists.owner INNER JOIN collaborations ON collaborations.playlist_id = playlists.id');
+    expect(query.values).toEqual([]);
   });
 });

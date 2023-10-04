@@ -1,14 +1,15 @@
 import server from '../../src/app/server.js';
 import {
-  firstPlaylist, firstSong, payloadAuthentication, payloadAuthenticationTwo, payloadPlaylist,
-  payloadSong,
-  payloadUser, payloadUserTwo, removeAllPlaylist,
-  removeAllPlaylistSong,
-  removeAllUser,
+  firstPlaylist, firstSong, payloadAuthentication,
+  payloadAuthenticationThree, payloadAuthenticationTwo, payloadPlaylist,
+  payloadSong, payloadUser, payloadUserThree, payloadUserTwo,
+  removeAllCollaboration, removeAllPlaylist,
+  removeAllPlaylistSong, removeAllUser,
 } from '../utils/index.js';
 
 let request;
 let accessToken = '';
+let userThreeId = '';
 let playlistId = '';
 let songId = '';
 
@@ -16,12 +17,14 @@ beforeAll(async () => {
   request = await server.init();
   await removeAllPlaylistSong();
   await removeAllPlaylist();
+  await removeAllCollaboration();
   await removeAllUser();
 });
 
 afterAll(async () => {
   await removeAllPlaylistSong();
   await removeAllPlaylist();
+  await removeAllCollaboration();
   await removeAllUser();
   await request.stop();
 });
@@ -318,6 +321,81 @@ describe('Test playlist feature: ', () => {
       expect(response.result.status).toBe('fail');
       expect(response.result.message).toBe('"songId" is required');
     });
+
+    it('should sucess add playlist use user collabolators', async () => {
+      let response = await request.inject({
+        method: 'POST',
+        url: '/users',
+        payload: payloadUserThree,
+      });
+      userThreeId = response.result.data.userId;
+
+      response = await request.inject({
+        method: 'POST',
+        url: '/authentications',
+        payload: payloadAuthenticationThree,
+      });
+      const localAccessToken = response.result.data.accessToken;
+
+      response = await request.inject({
+        method: 'POST',
+        url: '/collaborations',
+        payload: {
+          userId: userThreeId,
+          playlistId,
+        },
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      response = await request.inject({
+        method: 'POST',
+        url: '/songs',
+        payload: payloadSong,
+      });
+
+      response = await request.inject({
+        method: 'POST',
+        url: `/playlists/${playlistId}/songs`,
+        payload: {
+          songId: response.result.data.songId,
+        },
+        headers: {
+          Authorization: `Bearer ${localAccessToken}`,
+        },
+      });
+      expect(response.statusCode).toBe(201);
+      expect(response.result.status).toBeDefined();
+      expect(response.result.message).toBeDefined();
+      expect(response.result.status).toBe('success');
+      expect(response.result.message).toBe('success add song to playlist');
+    });
+
+    it('should reject add playlist if song exists', async () => {
+      let response = await request.inject({
+        method: 'POST',
+        url: '/authentications',
+        payload: payloadAuthenticationThree,
+      });
+      const localAccessToken = response.result.data.accessToken;
+
+      response = await request.inject({
+        method: 'POST',
+        url: `/playlists/${playlistId}/songs`,
+        payload: {
+          songId,
+        },
+        headers: {
+          Authorization: `Bearer ${localAccessToken}`,
+        },
+      });
+      expect(response.statusCode).toBe(400);
+      expect(response.result.status).toBeDefined();
+      expect(response.result.message).toBeDefined();
+      expect(response.result.status).toBe('fail');
+      expect(response.result.message).toBe('song already exists');
+    });
   });
 
   describe('GET /playlist/{id}/songs', () => {
@@ -339,16 +417,16 @@ describe('Test playlist feature: ', () => {
       expect(response.statusCode).toBe(200);
       expect(response.result.status).toBeDefined();
       expect(response.result.data).toBeDefined();
-      expect(response.result.data.playlists).toBeDefined();
-      expect(response.result.data.playlists.id).toBeDefined();
-      expect(response.result.data.playlists.name).toBeDefined();
-      expect(response.result.data.playlists.username).toBeDefined();
-      expect(response.result.data.playlists.songs).toBeDefined();
-      expect(response.result.data.playlists.songs[0].id).toBeDefined();
-      expect(response.result.data.playlists.songs[0].title).toBeDefined();
-      expect(response.result.data.playlists.songs[0].performer).toBeDefined();
+      expect(response.result.data.playlist).toBeDefined();
+      expect(response.result.data.playlist.id).toBeDefined();
+      expect(response.result.data.playlist.name).toBeDefined();
+      expect(response.result.data.playlist.username).toBeDefined();
+      expect(response.result.data.playlist.songs).toBeDefined();
+      expect(response.result.data.playlist.songs[0].id).toBeDefined();
+      expect(response.result.data.playlist.songs[0].title).toBeDefined();
+      expect(response.result.data.playlist.songs[0].performer).toBeDefined();
       expect(response.result.status).toBe('success');
-      expect(response.result.data.playlists.songs.length).toBe(1);
+      expect(response.result.data.playlist.songs.length).toBe(2);
     });
 
     it('should success get songs in playlist use another user has no songs', async () => {
@@ -368,7 +446,6 @@ describe('Test playlist feature: ', () => {
           Authorization: `Bearer ${localAccessToken}`,
         },
       });
-
       response = await request.inject({
         method: 'GET',
         url: `/playlists/${response.result.data.playlistId}/songs`,
@@ -376,17 +453,16 @@ describe('Test playlist feature: ', () => {
           Authorization: `Bearer ${localAccessToken}`,
         },
       });
-
       expect(response.statusCode).toBe(200);
       expect(response.result.status).toBeDefined();
       expect(response.result.data).toBeDefined();
-      expect(response.result.data.playlists).toBeDefined();
-      expect(response.result.data.playlists.id).toBeDefined();
-      expect(response.result.data.playlists.name).toBeDefined();
-      expect(response.result.data.playlists.username).toBeDefined();
-      expect(response.result.data.playlists.songs).toBeDefined();
+      expect(response.result.data.playlist).toBeDefined();
+      expect(response.result.data.playlist.id).toBeDefined();
+      expect(response.result.data.playlist.name).toBeDefined();
+      expect(response.result.data.playlist.username).toBeDefined();
+      expect(response.result.data.playlist.songs).toBeDefined();
       expect(response.result.status).toBe('success');
-      expect(response.result.data.playlists.songs.length).toBe(0);
+      expect(response.result.data.playlist.songs.length).toBe(0);
     });
 
     it('should reject get songs in playlist use not user owner', async () => {
@@ -430,6 +506,36 @@ describe('Test playlist feature: ', () => {
       expect(response.result.status).toBe('fail');
       expect(response.result.message).toBe('playlist not found');
     });
+
+    it('should success get songs in playlist use user collabolator has songs', async () => {
+      let response = await request.inject({
+        method: 'POST',
+        url: '/authentications',
+        payload: payloadAuthenticationThree,
+      });
+      const localAccessToken = response.result.data.accessToken;
+
+      response = await request.inject({
+        method: 'GET',
+        url: `/playlists/${playlistId}/songs`,
+        headers: {
+          Authorization: `Bearer ${localAccessToken}`,
+        },
+      });
+      expect(response.statusCode).toBe(200);
+      expect(response.result.status).toBeDefined();
+      expect(response.result.data).toBeDefined();
+      expect(response.result.data.playlist).toBeDefined();
+      expect(response.result.data.playlist.id).toBeDefined();
+      expect(response.result.data.playlist.name).toBeDefined();
+      expect(response.result.data.playlist.username).toBeDefined();
+      expect(response.result.data.playlist.songs).toBeDefined();
+      expect(response.result.data.playlist.songs[0].id).toBeDefined();
+      expect(response.result.data.playlist.songs[0].title).toBeDefined();
+      expect(response.result.data.playlist.songs[0].performer).toBeDefined();
+      expect(response.result.status).toBe('success');
+      expect(response.result.data.playlist.songs.length).toBe(2);
+    });
   });
 
   describe('DELETE /playlist/{id}/songs', () => {
@@ -455,7 +561,7 @@ describe('Test playlist feature: ', () => {
       expect(response.result.status).toBeDefined();
       expect(response.result.message).toBeDefined();
       expect(response.result.status).toBe('success');
-      expect(response.result.message).toBe('success add song to playlist');
+      expect(response.result.message).toBe('success delete song to playlist');
     });
 
     it('should reject delete songs in playlist if not playlist owner', async () => {
@@ -532,6 +638,49 @@ describe('Test playlist feature: ', () => {
       expect(response.result.message).toBeDefined();
       expect(response.result.status).toBe('fail');
       expect(response.result.message).toBe('"songId" is required');
+    });
+
+    it('should success delete songs in playlist use user collaboration has songs', async () => {
+      let response = await request.inject({
+        method: 'POST',
+        url: '/authentications',
+        payload: payloadAuthenticationThree,
+      });
+      const localAccessToken = response.result.data.accessToken;
+
+      response = await request.inject({
+        method: 'POST',
+        url: '/songs',
+        payload: payloadSong,
+      });
+      const { songId: id } = response.result.data;
+
+      response = await request.inject({
+        method: 'POST',
+        url: `/playlists/${playlistId}/songs`,
+        payload: {
+          songId: id,
+        },
+        headers: {
+          Authorization: `Bearer ${localAccessToken}`,
+        },
+      });
+
+      response = await request.inject({
+        method: 'DELETE',
+        url: `/playlists/${playlistId}/songs`,
+        payload: {
+          songId: id,
+        },
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      expect(response.statusCode).toBe(200);
+      expect(response.result.status).toBeDefined();
+      expect(response.result.message).toBeDefined();
+      expect(response.result.status).toBe('success');
+      expect(response.result.message).toBe('success delete song to playlist');
     });
   });
 });

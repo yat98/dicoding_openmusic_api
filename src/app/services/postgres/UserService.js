@@ -7,6 +7,7 @@ import {
 } from '../../../utils/index.js';
 import ValidationError from '../../exceptions/ValidationError.js';
 import AuthenticationError from '../../exceptions/AuthenticationError.js';
+import NotFoundError from '../../exceptions/NotFoundException.js';
 
 class UsersService {
   constructor() {
@@ -33,6 +34,13 @@ class UsersService {
     const result = await this._pool.query(query);
 
     return result.rows[0].id;
+  }
+
+  async verifyUserExists(id) {
+    const query = getConditionQuery({ id }, [], this._table);
+    const result = await this._pool.query(query);
+
+    if (!result.rows.length) throw new NotFoundError('user not found');
   }
 
   async verifyNewUsername(username) {

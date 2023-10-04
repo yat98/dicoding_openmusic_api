@@ -1,8 +1,9 @@
 import autoBind from 'auto-bind';
 
 class PlaylistHandler {
-  constructor(playlistsService, playlistSongsService) {
+  constructor(playlistsService, songsService, playlistSongsService) {
     this._playlistsService = playlistsService;
+    this._songService = songsService;
     this._playlistSongsService = playlistSongsService;
     autoBind(this);
   }
@@ -44,8 +45,11 @@ class PlaylistHandler {
   async postSongInPlaylistHandler(req, h) {
     const { id } = req.params;
     const { userId } = req.auth.credentials;
-    await this._playlistsService.verifyPlaylistOwner(id, userId);
-    await this._playlistSongsService.addSong(id, req.payload);
+    const { songId } = req.payload;
+    await this._songService.verifySongExists(songId);
+    await this._playlistsService.verifyPlaylistAccess(id, userId);
+    await this._playlistSongsService.verifySongNotExistsInPlaylist(id, songId);
+    await this._playlistSongsService.addSong(id, { songId });
 
     return h.response({
       status: 'success',
@@ -56,13 +60,13 @@ class PlaylistHandler {
   async getSongInPlaylistHandler(req, h) {
     const { id } = req.params;
     const { userId } = req.auth.credentials;
-    await this._playlistsService.verifyPlaylistOwner(id, userId);
-    const playlists = await this._playlistSongsService.getSongs(id, userId);
+    await this._playlistsService.verifyPlaylistAccess(id, userId);
+    const playlist = await this._playlistSongsService.getSongs(id, userId);
 
     return h.response({
       status: 'success',
       data: {
-        playlists,
+        playlist,
       },
     });
   }
@@ -70,12 +74,12 @@ class PlaylistHandler {
   async deleteSongInPlaylistHandler(req, h) {
     const { id } = req.params;
     const { userId } = req.auth.credentials;
-    await this._playlistsService.verifyPlaylistOwner(id, userId);
+    await this._playlistsService.verifyPlaylistAccess(id, userId);
     await this._playlistSongsService.deleteSong(id, req.payload);
 
     return h.response({
       status: 'success',
-      message: 'success add song to playlist',
+      message: 'success delete song to playlist',
     });
   }
 }

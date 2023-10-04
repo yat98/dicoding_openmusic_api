@@ -3,24 +3,26 @@ import { nanoid } from 'nanoid';
 import pg from 'pg';
 import {
   createQuery, deleteByConditionQuery,
+  getConditionQuery,
+  getJoinTableOrConditionQuery,
   getJoinTwoTableConditionQuery,
 } from '../../../utils/index.js';
 import { mapDBPlaylistsToModel, mapDBSongsToModel } from '../../../utils/transform.js';
 import NotFoundError from '../../exceptions/NotFoundException.js';
+import ValidationError from '../../exceptions/ValidationError.js';
 
 class PlaylistSongsService {
-  constructor(songService) {
+  constructor() {
     const { Pool } = pg;
     this._table = 'playlist_songs';
     this._tablePlaylist = 'playlists';
     this._tableSong = 'songs';
     this._tableUser = 'users';
+    this._tableCollaboration = 'collaborations';
     this._pool = new Pool();
-    this._songService = songService;
   }
 
   async addSong(playlistId, { songId }) {
-    await this._songService.verifySongExists(songId);
     const id = `playlist-song-${nanoid(16)}`;
     const createdAt = new Date().toISOString();
     const data = [
@@ -38,15 +40,13 @@ class PlaylistSongsService {
   }
 
   async getSongs(playlistId, userId) {
-    let query = getJoinTwoTableConditionQuery(
+    let query = getJoinTableOrConditionQuery(
       this._tablePlaylist,
-      this._tableUser,
-      'owner',
-      'id',
-      ['id', 'owner', 'name'],
-      ['username'],
-      { owner: userId },
-      {},
+      [`${this._tablePlaylist}.id`, `${this._tablePlaylist}.name`, `${this._tableUser}.username`],
+      `LEFT JOIN ${this._tableUser} ON ${this._tableUser}.id = ${this._tablePlaylist}.owner 
+      LEFT JOIN ${this._tableCollaboration} ON ${this._tableCollaboration}.playlist_id = ${this._tablePlaylist}.id`,
+      'WHERE collaborations.user_id = $1 OR playlists.owner = $2 AND playlists.id = $3',
+      [userId, userId, playlistId],
     );
     const resultPlaylist = await this._pool.query(query);
 
@@ -75,6 +75,15 @@ class PlaylistSongsService {
     const query = deleteByConditionQuery(this._table, { playlist_id: id, song_id: songId }, 'id');
     const result = await this._pool.query(query);
     if (!result.rows.length) throw new NotFoundError('song not found');
+  }
+
+  async verifySongNotExistsInPlaylist(id, songId) {
+    const query = getConditionQuery({ playlist_id: id, song_id: songId }, [], this._table);
+    const result = await this._pool.query(query);
+
+    if (result.rows.length > 0) {
+      throw new ValidationError('song already exists');
+    }
   }
 }
 
