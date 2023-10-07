@@ -28,6 +28,10 @@ import collaborationsPlugin from './api/collaborations/index.js';
 import CollaborationsService from './services/postgres/CollaborationsService.js';
 import collaborationsValidator from './validators/collaborations/index.js';
 
+import exportsPlugin from './api/exports/index.js';
+import ProducersService from './services/rabbitmq/ProducersService.js';
+import exportsValidator from './validators/exports/index.js';
+
 import ClientError from './exceptions/ClientError.js';
 import TokenManager from './tokenize/TokenManager.js';
 import token from '../config/token.js';
@@ -128,6 +132,14 @@ const registerPlugin = async () => {
         validator: collaborationsValidator,
       },
     },
+    {
+      plugin: exportsPlugin,
+      options: {
+        exportsService: ProducersService,
+        playlistsService,
+        validator: exportsValidator,
+      },
+    },
   ]);
 };
 
@@ -154,9 +166,9 @@ server.ext('onPreResponse', (req, h) => {
     if (app.mode === 'production') {
       res.message = 'server error';
     }
+    console.log(res);
     return h.response(res).code(500);
   }
-
   return h.continue;
 });
 
