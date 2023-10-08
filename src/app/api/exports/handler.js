@@ -14,7 +14,7 @@ class ExportHandler {
     const { targetEmail } = req.payload;
     await this._playlistsService.verifyPlaylistOwner(playlistId, userId);
 
-    const message = JSON.stringify({ userId, playlistId, targetEmail });
+    const message = JSON.stringify({ playlistId, targetEmail });
     await this._exportsService.sendMessage(this._queueKey, message);
 
     return h.response({
