@@ -1,5 +1,3 @@
-/* eslint-disable camelcase */
-
 exports.up = (pgm) => {
   pgm.alterColumn('albums', 'cover', {
     notNull: false,

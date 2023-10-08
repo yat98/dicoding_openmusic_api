@@ -1,5 +1,3 @@
-/* eslint-disable camelcase */
-
 exports.up = (pgm) => {
   pgm.createTable('album_user_likes', {
     id: {

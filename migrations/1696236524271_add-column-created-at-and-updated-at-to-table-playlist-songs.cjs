@@ -1,5 +1,3 @@
-/* eslint-disable camelcase */
-
 exports.up = (pgm) => {
   pgm.addColumn('playlist_songs', {
     created_at: {

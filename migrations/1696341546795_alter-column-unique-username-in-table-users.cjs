@@ -1,5 +1,3 @@
-/* eslint-disable camelcase */
-
 exports.up = (pgm) => {
   pgm.addConstraint('users', 'unique_username', 'UNIQUE(username)');
 };

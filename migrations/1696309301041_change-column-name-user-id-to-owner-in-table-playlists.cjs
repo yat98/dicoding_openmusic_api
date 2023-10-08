@@ -1,5 +1,3 @@
-/* eslint-disable camelcase */
-
 exports.up = (pgm) => {
   pgm.renameColumn('playlists', 'user_id', 'owner');
 };
