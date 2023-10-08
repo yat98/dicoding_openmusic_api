@@ -89,13 +89,14 @@ class AlbumHandler {
     const { id } = req.params;
     await this._service.verifyAlbumExists(id);
     const result = await this._albumUserLikeService.getAlbumUserLikeByAlbumId(id);
+    const { likes, cache } = result;
     const response = h.response({
       status: 'success',
       data: {
-        likes: Number(result.likes),
+        likes,
       },
     });
-    if (result.cache) response.header('X-Data-Source', 'cache');
+    if (cache) response.header('X-Data-Source', 'cache');
 
     return response;
   }

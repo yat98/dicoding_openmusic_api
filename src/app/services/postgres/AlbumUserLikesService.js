@@ -36,17 +36,13 @@ class AlbumUserLikesService {
     const cacheKey = `album_user_likes:${albumId}`;
     try {
       const result = await this._cacheService.get(cacheKey);
-      return JSON.parse(result);
+      return { likes: Number(result), cache: true };
     } catch (error) {
       const query = getConditionQuery({ album_id: albumId }, ['count(*)'], this._table);
       const result = await this._pool.query(query);
-      const cacheData = {
-        cache: true,
-        likes: Number(result.rows[0].count),
-      };
-      await this._cacheService.set(cacheKey, JSON.stringify(cacheData), 1800);
-      cacheData.cache = false;
-      return cacheData;
+      const likes = Number(result.rows[0].count);
+      await this._cacheService.set(cacheKey, likes, 1800);
+      return { likes, cache: false };
     }
   }
 
