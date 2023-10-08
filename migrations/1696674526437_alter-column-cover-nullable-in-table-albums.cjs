@@ -6,6 +6,6 @@ exports.up = (pgm) => {
 
 exports.down = (pgm) => {
   pgm.alterColumn('albums', 'cover', {
-    notNull: true,
+    notNull: false,
   });
 };
