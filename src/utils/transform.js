@@ -3,12 +3,14 @@ const mapDBAlbumsToModel = ({
   id,
   name,
   year,
+  cover,
 }) => {
   const yearNumber = Number(year);
   return ({
     id,
     name,
     year: yearNumber,
+    coverUrl: cover,
   });
 };
 

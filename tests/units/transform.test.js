@@ -8,6 +8,7 @@ describe('Test transform utils', () => {
       id: 1,
       name: 'Test album',
       year: 2023,
+      cover: null,
       created_at: date,
       updated_at: date,
     });
@@ -15,6 +16,7 @@ describe('Test transform utils', () => {
     expect(album).toEqual({
       id: 1,
       name: 'Test album',
+      coverUrl: null,
       year: 2023,
     });
   });

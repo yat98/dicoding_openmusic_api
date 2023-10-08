@@ -1,12 +1,17 @@
+import { URL } from 'url';
+import supertest from 'supertest';
 import server from '../../src/app/server.js';
 import {
   findAlbumId, firstAlbum, payloadAlbum,
   payloadAlbumUpdate, payloadSong, removeAllAlbum, removeAllSong,
 } from '../utils/index.js';
+import app from '../../src/config/app.js';
 
 let request;
 
 beforeAll(async () => {
+  await removeAllSong();
+  await removeAllAlbum();
   request = await server.init();
 });
 
@@ -196,6 +201,54 @@ describe('Test album feature: ', () => {
       expect(response.result.message).toBeDefined();
       expect(response.result.status).toBe('fail');
       expect(response.result.message).toBe('album not found');
+    });
+  });
+
+  describe('POST /albums/{id}/covers', () => {
+    it('should success upload album cover', async () => {
+      const __dirname = new URL('.', import.meta.url).pathname;
+      let response = await request.inject({
+        method: 'POST',
+        url: '/albums',
+        payload: payloadAlbum,
+      });
+      let album = await firstAlbum();
+
+      response = await supertest(request.listener)
+        .post(`/albums/${album.id}/covers`)
+        .attach('cover', `${__dirname}/uploads/flower.jpg`);
+      expect(response.status).toBe(201);
+      expect(response.body.status).toBeDefined();
+      expect(response.body.message).toBeDefined();
+      expect(response.body.status).toBe('success');
+      expect(response.body.message).toBe('album cover uploaded');
+
+      album = await firstAlbum();
+      response = await supertest(request.listener)
+        .get(album.coverUrl.replace(`http://${app.host}:${app.port}`, ''));
+      expect(response.status).toBe(200);
+    });
+
+    it('should reject upload album cover use big image', async () => {
+      const album = await firstAlbum();
+
+      const response = await supertest(request.listener)
+        .post(`/albums/${album.id}/covers`)
+        .attach('cover', `${__dirname}/uploads/picture-large.jpg`);
+      expect(response.status).toBe(413);
+    });
+
+    it('should reject upload album cover invalid payload', async () => {
+      const album = await firstAlbum();
+
+      const response = await supertest(request.listener)
+        .post(`/albums/${album.id}/covers`)
+        .attach('cover', `${__dirname}/uploads/text-small.txt`);
+      expect(response.status).toBe(400);
+      expect(response.body.status).toBeDefined();
+      expect(response.body.message).toBeDefined();
+      expect(response.body.status).toBe('fail');
+      expect(response.body.message).toBe('"content-type" must be one of [image/apng, image/avif, image/gif, image/jpeg, image/png, image/svg+xml, image/webp]');
     });
   });
 });

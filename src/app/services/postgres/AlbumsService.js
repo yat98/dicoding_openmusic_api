@@ -70,6 +70,18 @@ class AlbumsService {
     if (!result.rows.length) throw new NotFoundError('album not found');
   }
 
+  async updateAlbumCoverById(id, cover) {
+    const updatedAt = new Date().toISOString();
+    const data = {
+      cover,
+      updated_at: updatedAt,
+    };
+    const query = updateByIdQuery(id, data, this._table);
+    const result = await this._pool.query(query);
+
+    if (!result.rows.length) throw new NotFoundError('album not found');
+  }
+
   async deleteAlbumById(id) {
     const query = deleteByIdQuery(id, this._table);
     const result = await this._pool.query(query);

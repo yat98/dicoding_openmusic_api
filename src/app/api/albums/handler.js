@@ -1,8 +1,12 @@
+/* c8 ignore next 2 */
 import autoBind from 'auto-bind';
+import app from '../../../config/app.js';
 
 class AlbumHandler {
-  constructor(service) {
+  constructor(service, storageService, uploadsValidator) {
     this._service = service;
+    this._uploadsValidator = uploadsValidator;
+    this._storageService = storageService;
     autoBind(this);
   }
 
@@ -54,6 +58,19 @@ class AlbumHandler {
       status: 'success',
       message: 'album deleted',
     });
+  }
+
+  async postAlbumCoverHandler(req, h) {
+    const { id } = req.params;
+    const { cover } = req.payload;
+    this._uploadsValidator.validateImageHeaders(cover.hapi.headers);
+    const filename = await this._storageService.writeFile(cover, cover.hapi);
+    const coverUrl = `http://${app.host}:${app.port}/albums/upload/images/${filename}`;
+    await this._service.updateAlbumCoverById(id, coverUrl);
+    return h.response({
+      status: 'success',
+      message: 'album cover uploaded',
+    }).code(201);
   }
 }
 

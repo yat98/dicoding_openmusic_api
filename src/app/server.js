@@ -1,11 +1,16 @@
-/* c8 ignore next 27 */
+/* c8 ignore next 35 */
 import Hapi from '@hapi/hapi';
+import Inert from '@hapi/inert';
 import Jwt from '@hapi/jwt';
+import path from 'path';
+import { URL } from 'url';
 import app from '../config/app.js';
 
 import albumsPlugin from './api/albums/index.js';
 import AlbumsService from './services/postgres/AlbumsService.js';
 import albumsValidator from './validators/albums/index.js';
+import UploadsValidator from './validators/uploads/index.js';
+import StorageService from './services/storage/StorageService.js';
 
 import songsPlugin from './api/songs/index.js';
 import SongsService from './services/postgres/SongsService.js';
@@ -37,6 +42,7 @@ import TokenManager from './tokenize/TokenManager.js';
 import token from '../config/token.js';
 import PlaylistActivitiesService from './services/postgres/PlaylistActivitiesService.js';
 
+const __dirname = new URL('.', import.meta.url).pathname;
 const albumsService = new AlbumsService();
 const songsService = new SongsService();
 const usersService = new UsersService();
@@ -45,6 +51,7 @@ const collaborationsService = new CollaborationsService();
 const playlistsService = new PlaylistsService(songsService, collaborationsService);
 const playlistSongsService = new PlaylistSongsService();
 const playlistActivitiesService = new PlaylistActivitiesService();
+const storageService = new StorageService(path.resolve(__dirname, 'api/albums/file/images'));
 
 const server = Hapi.server({
   host: app.host,
@@ -62,6 +69,9 @@ const registerPlugin = async () => {
   await server.register([
     {
       plugin: Jwt,
+    },
+    {
+      plugin: Inert,
     },
   ]);
 
@@ -87,6 +97,8 @@ const registerPlugin = async () => {
       plugin: albumsPlugin,
       options: {
         service: albumsService,
+        storageService,
+        uploadsValidator: UploadsValidator,
         validator: albumsValidator,
       },
     },
@@ -166,7 +178,6 @@ server.ext('onPreResponse', (req, h) => {
     if (app.mode === 'production') {
       res.message = 'server error';
     }
-    console.log(res);
     return h.response(res).code(500);
   }
   return h.continue;
