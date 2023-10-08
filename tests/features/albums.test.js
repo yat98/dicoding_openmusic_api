@@ -20,9 +20,9 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await removeAllSong();
-  await removeAllAlbum();
-  await removeAllAlbumUserLikes();
+  // await removeAllSong();
+  // await removeAllAlbum();
+  // await removeAllAlbumUserLikes();
   await removeAllUser();
   await request.stop();
 });

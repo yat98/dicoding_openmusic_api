@@ -66,7 +66,7 @@ class AlbumHandler {
     const { cover } = req.payload;
     this._uploadsValidator.validateImageHeaders(cover.hapi.headers);
     const filename = await this._storageService.writeFile(cover, cover.hapi);
-    const coverUrl = `http://${app.host}:${app.port}/albums/upload/images/${filename}`;
+    const coverUrl = `http://${app.host}:${app.port}/albums/${id}/covers/images/${filename}`;
     await this._service.updateAlbumCoverById(id, coverUrl);
     return h.response({
       status: 'success',

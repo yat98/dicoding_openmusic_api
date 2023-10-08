@@ -49,7 +49,7 @@ const routes = (handler, validator) => [
   },
   {
     method: 'GET',
-    path: '/albums/upload/{param*}',
+    path: '/albums/{id}/covers/{param*}',
     handler: {
       directory: {
         path: path.resolve(__dirname, 'file'),
