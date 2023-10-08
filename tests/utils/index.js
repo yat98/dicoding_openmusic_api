@@ -220,3 +220,14 @@ export const removeAllPlaylistActivities = async () => {
   };
   await pool.query(query);
 };
+
+/**
+ * Albul User Likes Utils
+ */
+
+export const removeAllAlbumUserLikes = async () => {
+  const query = {
+    text: 'DELETE FROM album_user_likes',
+  };
+  await pool.query(query);
+};

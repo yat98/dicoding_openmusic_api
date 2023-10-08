@@ -3,10 +3,11 @@ import autoBind from 'auto-bind';
 import app from '../../../config/app.js';
 
 class AlbumHandler {
-  constructor(service, storageService, uploadsValidator) {
+  constructor(service, storageService, albumUserLikeService, uploadsValidator) {
     this._service = service;
     this._uploadsValidator = uploadsValidator;
     this._storageService = storageService;
+    this._albumUserLikeService = albumUserLikeService;
     autoBind(this);
   }
 
@@ -71,6 +72,43 @@ class AlbumHandler {
       status: 'success',
       message: 'album cover uploaded',
     }).code(201);
+  }
+
+  async postAlbumUserLikeHandler(req, h) {
+    const { id } = req.params;
+    await this._service.verifyAlbumExists(id);
+    const { userId } = req.auth.credentials;
+    await this._albumUserLikeService.addAlbumUserLike(id, userId);
+    return h.response({
+      status: 'success',
+      message: 'success like album',
+    }).code(201);
+  }
+
+  async getAlbumUserLikeHandler(req, h) {
+    const { id } = req.params;
+    await this._service.verifyAlbumExists(id);
+    const result = await this._albumUserLikeService.getAlbumUserLikeByAlbumId(id);
+    const response = h.response({
+      status: 'success',
+      data: {
+        likes: Number(result.likes),
+      },
+    });
+    if (result.cache) response.header('X-Data-Source', 'cache');
+
+    return response;
+  }
+
+  async deleteAlbumUserLikeHandler(req, h) {
+    const { id } = req.params;
+    await this._service.verifyAlbumExists(id);
+    const { userId } = req.auth.credentials;
+    await this._albumUserLikeService.deleteAlbumUserLikeByAlbumId(id, userId);
+    return h.response({
+      status: 'success',
+      message: 'success unlike album',
+    });
   }
 }
 

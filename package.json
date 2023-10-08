@@ -1,6 +1,6 @@
 {
   "name": "dicoding_openmusic_api",
-  "version": "1.0.0",
+  "version": "3.0.0",
   "description": "Submission for backend dicoding class ",
   "type": "module",
   "main": "src/index.js",
@@ -34,7 +34,8 @@
     "joi": "^17.10.1",
     "nanoid": "^3.3.6",
     "node-pg-migrate": "^6.2.2",
-    "pg": "^8.11.3"
+    "pg": "^8.11.3",
+    "redis": "^4.6.10"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.22.15",

@@ -11,6 +11,7 @@ import AlbumsService from './services/postgres/AlbumsService.js';
 import albumsValidator from './validators/albums/index.js';
 import UploadsValidator from './validators/uploads/index.js';
 import StorageService from './services/storage/StorageService.js';
+import AlbumUserLikesService from './services/postgres/AlbumUserLikesService.js';
 
 import songsPlugin from './api/songs/index.js';
 import SongsService from './services/postgres/SongsService.js';
@@ -41,8 +42,10 @@ import ClientError from './exceptions/ClientError.js';
 import TokenManager from './tokenize/TokenManager.js';
 import token from '../config/token.js';
 import PlaylistActivitiesService from './services/postgres/PlaylistActivitiesService.js';
+import CacheService from './services/redis/CacheService.js';
 
 const __dirname = new URL('.', import.meta.url).pathname;
+const cacheService = new CacheService();
 const albumsService = new AlbumsService();
 const songsService = new SongsService();
 const usersService = new UsersService();
@@ -52,6 +55,7 @@ const playlistsService = new PlaylistsService(songsService, collaborationsServic
 const playlistSongsService = new PlaylistSongsService();
 const playlistActivitiesService = new PlaylistActivitiesService();
 const storageService = new StorageService(path.resolve(__dirname, 'api/albums/file/images'));
+const albumUserLikesService = new AlbumUserLikesService(cacheService);
 
 const server = Hapi.server({
   host: app.host,
@@ -98,6 +102,7 @@ const registerPlugin = async () => {
       options: {
         service: albumsService,
         storageService,
+        albumUserLikesService,
         uploadsValidator: UploadsValidator,
         validator: albumsValidator,
       },
@@ -178,6 +183,7 @@ server.ext('onPreResponse', (req, h) => {
     if (app.mode === 'production') {
       res.message = 'server error';
     }
+    console.log(res);
     return h.response(res).code(500);
   }
   return h.continue;

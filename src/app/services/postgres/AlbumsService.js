@@ -88,6 +88,12 @@ class AlbumsService {
 
     if (!result.rows.length) throw new NotFoundError('album not found');
   }
+
+  async verifyAlbumExists(id) {
+    const query = getByIdQuery(id, this._table);
+    const result = await this._pool.query(query);
+    if (!result.rows.length) throw new NotFoundError('album not found');
+  }
 }
 
 export default AlbumsService;

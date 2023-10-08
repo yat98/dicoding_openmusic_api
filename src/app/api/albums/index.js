@@ -6,9 +6,14 @@ export default {
   name: 'albums',
   version: '1.0.0',
   register: (server, {
-    service, storageService, uploadsValidator, validator,
+    service, storageService, albumUserLikesService, uploadsValidator, validator,
   }) => {
-    const albumHandler = new AlbumHandler(service, storageService, uploadsValidator);
+    const albumHandler = new AlbumHandler(
+      service,
+      storageService,
+      albumUserLikesService,
+      uploadsValidator,
+    );
     server.route(routes(albumHandler, validator));
   },
 };
